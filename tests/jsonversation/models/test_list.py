@@ -265,3 +265,103 @@ def test_list_empty_string_items():
     assert list_obj._values[0]._value.getvalue() == ""
     assert list_obj._values[1]._value.getvalue() == "hello"
     assert list_obj._values[2]._value.getvalue() == ""
+
+
+def test_list_on_complete_single_callback():
+    """Test registering and triggering a single completion callback."""
+    list_obj = List(String)
+    completed_values = []
+
+    def callback(values: list[String]) -> None:
+        completed_values.append([v._value.getvalue() for v in values])
+
+    list_obj.on_complete(callback)
+    list_obj.update(["hello", "world"])
+    list_obj._complete()
+
+    assert len(completed_values) == 1
+    assert completed_values[0] == ["hello", "world"]
+
+
+def test_list_on_complete_multiple_callbacks():
+    """Test multiple callbacks are all triggered on completion."""
+    list_obj = List(String)
+    completed_values_1 = []
+    completed_values_2 = []
+
+    def callback1(values: list[String]) -> None:
+        completed_values_1.append(len(values))
+
+    def callback2(values: list[String]) -> None:
+        completed_values_2.append([v._value.getvalue() for v in values])
+
+    list_obj.on_complete(callback1)
+    list_obj.on_complete(callback2)
+    list_obj.update(["test1", "test2", "test3"])
+    list_obj._complete()
+
+    assert completed_values_1 == [3]
+    assert completed_values_2 == [["test1", "test2", "test3"]]
+
+
+def test_list_on_complete_callback_order():
+    """Test callbacks are called in registration order."""
+    list_obj = List(String)
+    call_order = []
+
+    def callback1(values: list[String]) -> None:
+        call_order.append("callback1")
+
+    def callback2(values: list[String]) -> None:
+        call_order.append("callback2")
+
+    def callback3(values: list[String]) -> None:
+        call_order.append("callback3")
+
+    list_obj.on_complete(callback1)
+    list_obj.on_complete(callback2)
+    list_obj.on_complete(callback3)
+    list_obj.update(["test"])
+    list_obj._complete()
+
+    assert call_order == ["callback1", "callback2", "callback3"]
+
+
+def test_list_complete_empty_list():
+    """Test complete method with empty list."""
+    list_obj = List(String)
+    completed_values = []
+
+    def callback(values: list[String]) -> None:
+        completed_values.append(len(values))
+
+    list_obj.on_complete(callback)
+    list_obj._complete()
+
+    assert completed_values == [0]
+
+
+def test_list_complete_multiple_calls():
+    """Test complete method can be called multiple times."""
+    list_obj = List(String)
+    completed_values = []
+
+    def callback(values: list[String]) -> None:
+        completed_values.append([v._value.getvalue() for v in values])
+
+    list_obj.on_complete(callback)
+    list_obj.update(["hello"])
+    list_obj._complete()
+    list_obj._complete()
+
+    assert len(completed_values) == 2
+    assert completed_values[0] == ["hello"]
+    assert completed_values[1] == ["hello"]
+
+
+def test_list_complete_no_callbacks():
+    """Test complete method works when no callbacks are registered."""
+    list_obj = List(String)
+    list_obj.update(["test"])
+    # Should not raise an exception
+    list_obj._complete()

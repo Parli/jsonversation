@@ -191,3 +191,98 @@ def test_complex_streaming_scenario():
         "The quick brown fox",
     ]
     assert string_obj._value.getvalue() == "The quick brown fox"
+
+
+def test_string_on_complete_single_callback():
+    string_obj = String()
+    completed_values = []
+
+    def callback(value: str) -> None:
+        completed_values.append(value)
+
+    string_obj.on_complete(callback)
+    string_obj.update("hello world")
+    string_obj._complete()
+
+    assert completed_values == ["hello world"]
+
+
+def test_string_on_complete_multiple_callbacks():
+    string_obj = String()
+    completed_values_1 = []
+    completed_values_2 = []
+
+    def callback1(value: str) -> None:
+        completed_values_1.append(value)
+
+    def callback2(value: str) -> None:
+        completed_values_2.append(value)
+
+    string_obj.on_complete(callback1)
+    string_obj.on_complete(callback2)
+    string_obj.update("test value")
+    string_obj._complete()
+
+    assert completed_values_1 == ["test value"]
+    assert completed_values_2 == ["test value"]
+
+
+def test_string_on_complete_callback_order():
+    """Test callbacks are called in the order they were registered."""
+    string_obj = String()
+    call_order = []
+
+    def callback1(value: str) -> None:
+        call_order.append("callback1")
+
+    def callback2(value: str) -> None:
+        call_order.append("callback2")
+
+    def callback3(value: str) -> None:
+        call_order.append("callback3")
+
+    string_obj.on_complete(callback1)
+    string_obj.on_complete(callback2)
+    string_obj.on_complete(callback3)
+    string_obj.update("test")
+    string_obj._complete()
+
+    assert call_order == ["callback1", "callback2", "callback3"]
+
+
+def test_string_complete_empty_value():
+    """Test complete method with empty string value."""
+    string_obj = String()
+    completed_values = []
+
+    def callback(value: str) -> None:
+        completed_values.append(value)
+
+    string_obj.on_complete(callback)
+    string_obj._complete()
+
+    assert completed_values == [""]
+
+
+def test_string_complete_multiple_calls():
+    """Test complete method can be called multiple times."""
+    string_obj = String()
+    completed_values = []
+
+    def callback(value: str) -> None:
+        completed_values.append(value)
+
+    string_obj.on_complete(callback)
+    string_obj.update("hello")
+    string_obj._complete()
+    string_obj._complete()
+
+    assert completed_values == ["hello", "hello"]
+
+
+def test_string_complete_no_callbacks():
+    """Test complete method works when no callbacks are registered."""
+    string_obj = String()
+    string_obj.update("test")
+    # Should not raise an exception
+    string_obj._complete()

@@ -38,6 +38,12 @@ class ComplexNestedObject(Object):
     footer: String
 
 
+class ObjectWithStringList(Object):
+    title: String
+    items: List[String]
+    count: String
+
+
 class EmptyObject(Object):
     pass
 
@@ -415,3 +421,48 @@ def test_object_update_nested_attributes():
     assert obj.description._value.getvalue() == "A nested object"
     assert obj.details.name._value.getvalue() == "nested_name"
     assert obj.details.value._value.getvalue() == "nested_value"
+
+
+def test_object_complete_simple():
+    """Test Object complete method functionality."""
+    obj = SimpleObject()
+    completed_values = []
+    obj.name.on_complete(lambda v: completed_values.append(v))
+    obj.update({"name": "test_name", "value": "test_value"})
+
+    assert completed_values == ["test_name"]
+
+
+def test_object_complete_incomplete_string():
+    """Test Object complete method functionality."""
+    obj = SimpleObject()
+
+    completed_values = []
+    obj.name.on_complete(lambda v: completed_values.append(v))
+
+    obj.update({"name": "test_name"})
+
+    assert completed_values == []
+
+
+def test_object_complete_with_lists():
+    """Test complete method on objects with lists."""
+    obj = ObjectWithStringList()
+
+    completed_items = []
+
+    def list_on_complete(values: list[String]) -> None:
+        completed_items.extend(values)
+
+    obj.items.on_complete(list_on_complete)
+
+    obj.update(
+        {
+            "title": "Test Title",
+            "items": ["item1", "item2"],
+            "count": "2",
+        }
+    )
+
+    assert len(completed_items) != 0
+    assert [v.value for v in completed_items] == ["item1", "item2"]

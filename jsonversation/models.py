@@ -5,17 +5,21 @@ from typing import Callable
 
 
 class StreamingObject[T]:
-    def __init__(self) -> None:
-        self._on_append_funcs = []
-
     def update(self, value: T) -> None:
         return None
 
+    def _complete(self) -> None: ...
+
 
 class Object(StreamingObject[dict]):
+    _keys: list[str]
+    _parsed_keys: list[str]
+
     def __init__(self) -> None:
         super().__init__()
         self._keys = []
+        self._parsed_keys = []
+
         for key, type_hint in type(self).__annotations__.items():
             self._keys.append(key)
 
@@ -35,15 +39,27 @@ class Object(StreamingObject[dict]):
             model_value = self.__getattribute__(key)
             model_value.update(value[key])
 
+            if len(self._parsed_keys) == 0:
+                # this is the first key we're parsing
+                self._parsed_keys.append(key)
+            else:
+                if key not in self._parsed_keys:
+                    # this is the new key, we need to complete the previous object
+                    self.__getattribute__(self._parsed_keys[-1])._complete()
+                    self._parsed_keys.append(key)
+
         return
 
 
 class String(StreamingObject[str]):
     _value: io.StringIO
     _on_append_funcs: list[Callable[[str], None]]
+    _on_complete_funcs: list[Callable[[str], None]]
 
     def __init__(self) -> None:
         super().__init__()
+        self._on_append_funcs = []
+        self._on_complete_funcs = []
         self._value = io.StringIO()
 
     def update(self, value: str):
@@ -64,8 +80,15 @@ class String(StreamingObject[str]):
 
         return
 
+    def _complete(self) -> None:
+        for func in self._on_complete_funcs:
+            func(self.value)
+
     def on_append(self, func: Callable[[str], None]) -> None:
         self._on_append_funcs.append(func)
+
+    def on_complete(self, func: Callable[[str], None]) -> None:
+        self._on_complete_funcs.append(func)
 
     @property
     def value(self) -> str:
@@ -76,10 +99,13 @@ class List[T: StreamingObject](StreamingObject[list]):
     _item_type: type[T]
     _values: list[T]
     _on_append_funcs: list[Callable[[T], None]]
+    _on_complete_funcs: list[Callable[[list[T]], None]]
 
     def __init__(self, item_type: type[T]) -> None:
         super().__init__()
         self._values = []
+        self._on_complete_funcs = []
+        self._on_append_funcs = []
         self._item_type = item_type
 
     def update(self, value: list) -> None:
@@ -89,6 +115,8 @@ class List[T: StreamingObject](StreamingObject[list]):
         # NOTE this is not very efficient, but it will do for now
         for idx, item in enumerate(value):
             if idx >= len(self._values):
+                if idx > 0:
+                    self._values[-1]._complete()
                 new_value = self._item_type()
                 new_value.update(item)
                 self._values.append(new_value)
@@ -102,6 +130,13 @@ class List[T: StreamingObject](StreamingObject[list]):
 
     def on_append(self, func: Callable[[T], None]) -> None:
         self._on_append_funcs.append(func)
+
+    def on_complete(self, func: Callable[[list[T]], None]) -> None:
+        self._on_complete_funcs.append(func)
+
+    def _complete(self) -> None:
+        for func in self._on_complete_funcs:
+            func(self._values)
 
     @property
     def value(self) -> list[T]:
