@@ -1,7 +1,7 @@
 from jsonversation.models import List, String
 
 
-def test_list_init():
+def test_list_init() -> None:
     list_obj = List(String)
 
     assert list_obj._values == []
@@ -9,14 +9,14 @@ def test_list_init():
     assert list_obj._on_append_funcs == []
 
 
-def test_list_update_empty_list():
+def test_list_update_empty_list() -> None:
     list_obj = List(String)
     list_obj.update([])
 
     assert list_obj._values == []
 
 
-def test_list_update_single_item():
+def test_list_update_single_item() -> None:
     list_obj = List(String)
     list_obj.update(["hello"])
 
@@ -25,7 +25,7 @@ def test_list_update_single_item():
     assert list_obj._values[0]._value.getvalue() == "hello"
 
 
-def test_list_update_multiple_items():
+def test_list_update_multiple_items() -> None:
     list_obj = List(String)
     list_obj.update(["hello", "world", "test"])
 
@@ -36,7 +36,7 @@ def test_list_update_multiple_items():
     assert list_obj._values[2]._value.getvalue() == "test"
 
 
-def test_list_update_incremental_growth():
+def test_list_update_incremental_growth() -> None:
     list_obj = List(String)
 
     list_obj.update(["hello"])
@@ -55,7 +55,7 @@ def test_list_update_incremental_growth():
     assert list_obj._values[2]._value.getvalue() == "test"
 
 
-def test_list_update_existing_items():
+def test_list_update_existing_items() -> None:
     list_obj = List(String)
 
     # Initial update
@@ -72,7 +72,7 @@ def test_list_update_existing_items():
     assert list_obj._values[1]._value.getvalue() == "world!"
 
 
-def test_list_update_mixed_new_and_existing():
+def test_list_update_mixed_new_and_existing() -> None:
     """Test updating List with mix of existing and new items."""
     list_obj = List(String)
 
@@ -88,7 +88,7 @@ def test_list_update_mixed_new_and_existing():
     assert list_obj._values[2]._value.getvalue() == "another"
 
 
-def test_list_on_append_single_callback():
+def test_list_on_append_single_callback() -> None:
     """Test registering and triggering a single callback for new items."""
     list_obj = List(String)
     appended_items = []
@@ -104,7 +104,7 @@ def test_list_on_append_single_callback():
     assert appended_items[0]._value.getvalue() == "hello"
 
 
-def test_list_on_append_multiple_callbacks():
+def test_list_on_append_multiple_callbacks() -> None:
     """Test multiple callbacks are all triggered for new items."""
     list_obj = List(String)
     appended_items_1 = []
@@ -125,7 +125,7 @@ def test_list_on_append_multiple_callbacks():
     assert appended_items_1[0] is appended_items_2[0]  # Same object
 
 
-def test_list_on_append_only_new_items():
+def test_list_on_append_only_new_items() -> None:
     """Test callbacks are only triggered for newly added items, not existing ones."""
     list_obj = List(String)
     appended_items = []
@@ -148,7 +148,7 @@ def test_list_on_append_only_new_items():
     assert len(appended_items) == 2
 
 
-def test_list_on_append_multiple_new_items():
+def test_list_on_append_multiple_new_items() -> None:
     """Test callbacks triggered for multiple new items in single update."""
     list_obj = List(String)
     appended_items = []
@@ -165,7 +165,7 @@ def test_list_on_append_multiple_new_items():
     assert appended_items[2]._value.getvalue() == "third"
 
 
-def test_list_on_append_callback_order():
+def test_list_on_append_callback_order() -> None:
     """Test callbacks are called in registration order for each new item."""
     list_obj = List(String)
     call_order = []
@@ -189,14 +189,14 @@ def test_list_on_append_callback_order():
     assert call_order == expected_order
 
 
-def test_list_update_returns_none():
+def test_list_update_returns_none() -> None:
     """Test that update method returns None."""
     list_obj = List(String)
     result = list_obj.update(["hello"])
     assert result is None
 
 
-def test_list_on_append_returns_none():
+def test_list_on_append_returns_none() -> None:
     """Test that on_append method returns None."""
     list_obj = List(String)
 
@@ -229,7 +229,7 @@ def test_list_on_append_returns_none():
 #     assert list_obj._values[1].value._value.getvalue() == "val2"
 
 
-def test_list_streaming_behavior():
+def test_list_streaming_behavior() -> None:
     """Test complex streaming scenario with incremental updates."""
     list_obj = List(String)
     appended_items = []
@@ -256,7 +256,7 @@ def test_list_streaming_behavior():
     assert list_obj._values[2]._value.getvalue() == "jumps"
 
 
-def test_list_empty_string_items():
+def test_list_empty_string_items() -> None:
     """Test List with empty string items."""
     list_obj = List(String)
     list_obj.update(["", "hello", ""])
@@ -267,7 +267,7 @@ def test_list_empty_string_items():
     assert list_obj._values[2]._value.getvalue() == ""
 
 
-def test_list_on_complete_single_callback():
+def test_list_on_complete_single_callback() -> None:
     """Test registering and triggering a single completion callback."""
     list_obj = List(String)
     completed_values = []
@@ -283,7 +283,7 @@ def test_list_on_complete_single_callback():
     assert completed_values[0] == ["hello", "world"]
 
 
-def test_list_on_complete_multiple_callbacks():
+def test_list_on_complete_multiple_callbacks() -> None:
     """Test multiple callbacks are all triggered on completion."""
     list_obj = List(String)
     completed_values_1 = []
@@ -304,7 +304,7 @@ def test_list_on_complete_multiple_callbacks():
     assert completed_values_2 == [["test1", "test2", "test3"]]
 
 
-def test_list_on_complete_callback_order():
+def test_list_on_complete_callback_order() -> None:
     """Test callbacks are called in registration order."""
     list_obj = List(String)
     call_order = []
@@ -327,7 +327,7 @@ def test_list_on_complete_callback_order():
     assert call_order == ["callback1", "callback2", "callback3"]
 
 
-def test_list_complete_empty_list():
+def test_list_complete_empty_list() -> None:
     """Test complete method with empty list."""
     list_obj = List(String)
     completed_values = []
@@ -341,7 +341,7 @@ def test_list_complete_empty_list():
     assert completed_values == [0]
 
 
-def test_list_complete_multiple_calls():
+def test_list_complete_multiple_calls() -> None:
     """Test complete method can be called multiple times."""
     list_obj = List(String)
     completed_values = []
@@ -359,7 +359,7 @@ def test_list_complete_multiple_calls():
     assert completed_values[1] == ["hello"]
 
 
-def test_list_complete_no_callbacks():
+def test_list_complete_no_callbacks() -> None:
     """Test complete method works when no callbacks are registered."""
     list_obj = List(String)
     list_obj.update(["test"])
