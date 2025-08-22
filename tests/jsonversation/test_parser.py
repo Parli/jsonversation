@@ -4,7 +4,7 @@ from jsonversation.parser import Parser
 from jsonversation.models import Object, String, List
 
 
-def create_simple_object():
+def create_simple_object() -> Object:
     """Create a simple test object with string attribute."""
 
     class TestObject(Object):
@@ -13,7 +13,7 @@ def create_simple_object():
     return TestObject()
 
 
-def create_object_with_list():
+def create_object_with_list() -> Object:
     """Create a test object with list attribute."""
 
     class TestObject(Object):
@@ -22,7 +22,7 @@ def create_object_with_list():
     return TestObject()
 
 
-def create_complex_object():
+def create_complex_object() -> Object:
     """Create a complex test object with multiple attributes."""
 
     class TestObject(Object):
@@ -34,7 +34,7 @@ def create_complex_object():
 
 
 # Parser initialization tests
-def test_parser_init_creates_buffer_and_stores_object():
+def test_parser_init_creates_buffer_and_stores_object() -> None:
     """Test that Parser initializes with empty buffer and stores the object."""
     obj = create_simple_object()
     parser = Parser(obj)
@@ -44,7 +44,7 @@ def test_parser_init_creates_buffer_and_stores_object():
     assert parser._buffer.getvalue() == b""
 
 
-def test_parser_init_with_different_object_types():
+def test_parser_init_with_different_object_types() -> None:
     """Test Parser initialization with different Object types."""
     simple_obj = create_simple_object()
     list_obj = create_object_with_list()
@@ -64,7 +64,7 @@ def test_parser_init_with_different_object_types():
 
 
 # Basic push functionality tests
-def test_push_writes_chunk_to_buffer():
+def test_push_writes_chunk_to_buffer() -> None:
     """Test that push method writes chunk to internal buffer."""
     obj = create_simple_object()
     parser = Parser(obj)
@@ -75,7 +75,7 @@ def test_push_writes_chunk_to_buffer():
     assert parser._buffer.getvalue() == chunk.encode()
 
 
-def test_push_accumulates_chunks_in_buffer():
+def test_push_accumulates_chunks_in_buffer() -> None:
     """Test that multiple push calls accumulate data in buffer."""
     obj = create_simple_object()
     parser = Parser(obj)
@@ -90,7 +90,7 @@ def test_push_accumulates_chunks_in_buffer():
     assert parser._buffer.getvalue() == expected_buffer
 
 
-def test_push_with_empty_chunk():
+def test_push_with_empty_chunk() -> None:
     """Test push behavior with empty string chunk."""
     obj = create_simple_object()
     parser = Parser(obj)
@@ -102,7 +102,7 @@ def test_push_with_empty_chunk():
     assert obj.name._value.getvalue() == ""
 
 
-def test_push_with_unicode_chunk():
+def test_push_with_unicode_chunk() -> None:
     """Test push with unicode characters in chunk."""
     obj = create_simple_object()
     parser = Parser(obj)
@@ -115,7 +115,7 @@ def test_push_with_unicode_chunk():
 
 
 # JSON parsing and object update tests
-def test_push_updates_string_attribute():
+def test_push_updates_string_attribute() -> None:
     """Test that push updates String attributes correctly."""
     obj = create_simple_object()
     parser = Parser(obj)
@@ -125,7 +125,7 @@ def test_push_updates_string_attribute():
     assert obj.name._value.getvalue() == "Alice"
 
 
-def test_push_updates_string_progressively():
+def test_push_updates_string_progressively() -> None:
     """Test progressive string updates through multiple pushes."""
     obj = create_simple_object()
     parser = Parser(obj)
@@ -139,7 +139,7 @@ def test_push_updates_string_progressively():
     assert obj.name._value.getvalue() == "Hello World"
 
 
-def test_push_updates_list_attribute():
+def test_push_updates_list_attribute() -> None:
     """Test that push updates List attributes correctly."""
     obj = create_object_with_list()
     parser = Parser(obj)
@@ -152,7 +152,7 @@ def test_push_updates_list_attribute():
     assert obj.items._values[2]._value.getvalue() == "third"
 
 
-def test_push_updates_complex_object():
+def test_push_updates_complex_object() -> None:
     """Test updating object with multiple attributes."""
     obj = create_complex_object()
     parser = Parser(obj)
@@ -167,7 +167,7 @@ def test_push_updates_complex_object():
     assert obj.tags._values[1]._value.getvalue() == "testing"
 
 
-def test_push_ignores_unknown_keys():
+def test_push_ignores_unknown_keys() -> None:
     """Test that unknown keys in JSON are ignored."""
     obj = create_simple_object()
     parser = Parser(obj)
@@ -181,7 +181,7 @@ def test_push_ignores_unknown_keys():
     assert not hasattr(obj, "another")
 
 
-def test_push_with_partial_json():
+def test_push_with_partial_json() -> None:
     """Test behavior with incomplete JSON that jiter can handle."""
     obj = create_simple_object()
     parser = Parser(obj)
@@ -195,7 +195,7 @@ def test_push_with_partial_json():
     # This tests the parser's robustness with partial data
 
 
-def test_push_expanding_list():
+def test_push_expanding_list() -> None:
     """Test adding items to a list through multiple pushes."""
     obj = create_object_with_list()
     parser = Parser(obj)
@@ -211,7 +211,7 @@ def test_push_expanding_list():
     # This may not parse correctly, but tests buffer accumulation
 
 
-def test_push_expanding_string():
+def test_push_expanding_string() -> None:
     """Test string expansion through multiple pushes."""
     obj = create_simple_object()
     parser = Parser(obj)
@@ -226,7 +226,7 @@ def test_push_expanding_string():
 
 
 # Buffer state and persistence tests
-def test_buffer_persists_between_push_calls():
+def test_buffer_persists_between_push_calls() -> None:
     """Test that buffer maintains state between push calls."""
     obj = create_simple_object()
     parser = Parser(obj)
@@ -241,7 +241,7 @@ def test_buffer_persists_between_push_calls():
     assert b"{" in buffer_after_second
 
 
-def test_multiple_complete_json_pushes():
+def test_multiple_complete_json_pushes() -> None:
     """Test multiple complete JSON objects pushed sequentially."""
     obj = create_simple_object()
     parser = Parser(obj)
@@ -259,7 +259,7 @@ def test_multiple_complete_json_pushes():
 
 
 # Edge cases and error conditions
-def test_push_with_malformed_json():
+def test_push_with_malformed_json() -> None:
     """Test behavior with malformed JSON."""
     obj = create_simple_object()
     parser = Parser(obj)
@@ -269,7 +269,7 @@ def test_push_with_malformed_json():
         parser.push('{"name": invalid}')
 
 
-def test_push_empty_json_object():
+def test_push_empty_json_object() -> None:
     """Test pushing empty JSON object."""
     obj = create_simple_object()
     parser = Parser(obj)
@@ -280,7 +280,7 @@ def test_push_empty_json_object():
     assert obj.name._value.getvalue() == ""
 
 
-def test_push_json_with_null_values():
+def test_push_json_with_null_values() -> None:
     """Test handling of null values in JSON."""
     obj = create_simple_object()
     parser = Parser(obj)
@@ -291,7 +291,7 @@ def test_push_json_with_null_values():
 
 
 # Property access and object integrity tests
-def test_parser_object_property_immutable():
+def test_parser_object_property_immutable() -> None:
     """Test that parser's object reference remains constant."""
     obj = create_simple_object()
     parser = Parser(obj)
@@ -306,7 +306,7 @@ def test_parser_object_property_immutable():
     assert parser._object is obj
 
 
-def test_buffer_direct_access():
+def test_buffer_direct_access() -> None:
     """Test direct access to parser's buffer."""
     obj = create_simple_object()
     parser = Parser(obj)
@@ -319,7 +319,7 @@ def test_buffer_direct_access():
     assert b'{"title": "test"}' in parser._buffer.getvalue()
 
 
-def test_multiple_parsers_independence():
+def test_multiple_parsers_independence() -> None:
     """Test that multiple parsers maintain independent state."""
     obj1 = create_simple_object()
     obj2 = create_simple_object()
@@ -338,7 +338,7 @@ def test_multiple_parsers_independence():
     assert parser1._buffer.getvalue() != parser2._buffer.getvalue()
 
 
-def test_large_json_handling():
+def test_large_json_handling() -> None:
     """Test handling of larger JSON strings."""
     obj = create_complex_object()
     parser = Parser(obj)
