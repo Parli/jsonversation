@@ -67,6 +67,10 @@ class String(StreamingObject[str]):
     def on_append(self, func: Callable[[str], None]) -> None:
         self._on_append_funcs.append(func)
 
+    @property
+    def value(self) -> str:
+        return self._value.getvalue()
+
 
 class List[T: StreamingObject](StreamingObject[list]):
     _item_type: type[T]
@@ -98,3 +102,7 @@ class List[T: StreamingObject](StreamingObject[list]):
 
     def on_append(self, func: Callable[[T], None]) -> None:
         self._on_append_funcs.append(func)
+
+    @property
+    def value(self) -> list[T]:
+        return self._values
