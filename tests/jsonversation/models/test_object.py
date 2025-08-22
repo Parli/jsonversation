@@ -48,7 +48,7 @@ class EmptyObject(Object):
     pass
 
 
-def test_object_init_simple():
+def test_object_init_simple() -> None:
     """Test Object initialization with simple String attributes."""
     obj = SimpleObject()
 
@@ -61,7 +61,7 @@ def test_object_init_simple():
     assert obj._keys == ["name", "value"]
 
 
-def test_object_init_complex():
+def test_object_init_complex() -> None:
     """Test Object initialization with complex attributes including List."""
     obj = ComplexObject()
 
@@ -75,7 +75,7 @@ def test_object_init_complex():
     assert obj._keys == ["title", "items", "metadata"]
 
 
-def test_object_init_nested():
+def test_object_init_nested() -> None:
     """Test Object initialization with nested Object attributes."""
     obj = NestedObject()
 
@@ -94,7 +94,7 @@ def test_object_init_nested():
     assert obj.details.value._value.getvalue() == ""
 
 
-def test_object_init_with_object_list():
+def test_object_init_with_object_list() -> None:
     """Test Object initialization with List of Objects."""
     obj = ObjectWithObjectList()
 
@@ -108,7 +108,7 @@ def test_object_init_with_object_list():
     assert obj._keys == ["title", "objects", "count"]
 
 
-def test_object_init_complex_nested():
+def test_object_init_complex_nested() -> None:
     """Test Object initialization with complex nested structure including List of Objects."""
     obj = ComplexNestedObject()
 
@@ -121,7 +121,7 @@ def test_object_init_complex_nested():
     assert obj._keys == ["header", "nested_objects", "simple_list", "footer"]
 
 
-def test_object_init_deep_nested():
+def test_object_init_deep_nested() -> None:
     """Test Object initialization with deeply nested Object attributes."""
     obj = DeepNestedObject()
 
@@ -140,14 +140,14 @@ def test_object_init_deep_nested():
     assert isinstance(obj.nested_data.details.value, String)
 
 
-def test_object_init_empty():
+def test_object_init_empty() -> None:
     """Test Object initialization with no attributes."""
     obj = EmptyObject()
 
     assert obj._keys == []
 
 
-def test_object_update_simple_attributes():
+def test_object_update_simple_attributes() -> None:
     """Test updating Object with simple string attributes."""
     obj = SimpleObject()
 
@@ -157,7 +157,7 @@ def test_object_update_simple_attributes():
     assert obj.value._value.getvalue() == "test_value"
 
 
-def test_object_update_with_object_list():
+def test_object_update_with_object_list() -> None:
     """Test updating Object with List of Objects."""
     obj = ObjectWithObjectList()
 
@@ -187,7 +187,7 @@ def test_object_update_with_object_list():
     assert obj.objects._values[1].value._value.getvalue() == "val2"
 
 
-def test_object_update_object_list_incremental():
+def test_object_update_object_list_incremental() -> None:
     """Test incremental updates to List of Objects."""
     obj = ObjectWithObjectList()
 
@@ -216,7 +216,7 @@ def test_object_update_object_list_incremental():
     assert obj.objects._values[1].value._value.getvalue() == "val2"
 
 
-def test_object_update_object_list_partial():
+def test_object_update_object_list_partial() -> None:
     """Test partial updates to objects within List of Objects."""
     obj = ObjectWithObjectList()
 
@@ -245,7 +245,7 @@ def test_object_update_object_list_partial():
     assert obj.objects._values[1].value._value.getvalue() == "val2_added"
 
 
-def test_object_update_complex_nested_with_object_lists():
+def test_object_update_complex_nested_with_object_lists() -> None:
     """Test updating complex nested structure with multiple object lists."""
     obj = ComplexNestedObject()
 
@@ -297,7 +297,7 @@ def test_object_update_complex_nested_with_object_lists():
     assert nested2.details.value._value.getvalue() == ""  # Not provided
 
 
-def test_object_update_object_list_streaming():
+def test_object_update_object_list_streaming() -> None:
     """Test streaming updates to object lists with incremental changes."""
     obj = ObjectWithObjectList()
 
@@ -346,7 +346,7 @@ def test_object_update_object_list_streaming():
     assert obj.objects._values[2].value._value.getvalue() == "val3"
 
 
-def test_object_list_with_callbacks():
+def test_object_list_with_callbacks() -> None:
     """Test callbacks on object lists are triggered for new objects."""
     obj = ObjectWithObjectList()
     new_objects = []
@@ -382,7 +382,7 @@ def test_object_list_with_callbacks():
     assert new_objects == ["callback1", "callback2", "callback3"]
 
 
-def test_object_nested_object_callbacks():
+def test_object_nested_object_callbacks() -> None:
     """Test callbacks on nested objects within object lists."""
     obj = ObjectWithObjectList()
     name_changes = []
@@ -405,7 +405,7 @@ def test_object_nested_object_callbacks():
     assert name_changes == ["_updated", "_also_updated"]
 
 
-def test_object_update_nested_attributes():
+def test_object_update_nested_attributes() -> None:
     """Test updating Object with nested object data."""
     obj = NestedObject()
 
@@ -423,7 +423,7 @@ def test_object_update_nested_attributes():
     assert obj.details.value._value.getvalue() == "nested_value"
 
 
-def test_object_complete_simple():
+def test_object_complete_simple() -> None:
     """Test Object complete method functionality."""
     obj = SimpleObject()
     completed_values = []
@@ -433,7 +433,7 @@ def test_object_complete_simple():
     assert completed_values == ["test_name"]
 
 
-def test_object_complete_incomplete_string():
+def test_object_complete_incomplete_string() -> None:
     """Test Object complete method functionality."""
     obj = SimpleObject()
 
@@ -445,7 +445,7 @@ def test_object_complete_incomplete_string():
     assert completed_values == []
 
 
-def test_object_complete_with_lists():
+def test_object_complete_with_lists() -> None:
     """Test complete method on objects with lists."""
     obj = ObjectWithStringList()
 
