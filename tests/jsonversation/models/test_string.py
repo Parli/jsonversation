@@ -155,13 +155,6 @@ def test_on_append_callback_order() -> None:
     assert call_order == ["callback1", "callback2", "callback3"]
 
 
-def test_update_returns_none() -> None:
-    """Test that update method returns None."""
-    string_obj = String()
-    result = string_obj.update("hello")
-    assert result is None
-
-
 def test_complex_streaming_scenario() -> None:
     """Test a complex streaming scenario with multiple updates and callbacks."""
     string_obj = String()

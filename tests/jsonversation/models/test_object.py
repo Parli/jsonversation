@@ -1,3 +1,4 @@
+from typing import Any
 from jsonversation.models import Object, String, List
 
 
@@ -302,7 +303,7 @@ def test_object_update_object_list_streaming() -> None:
     obj = ObjectWithObjectList()
 
     # Streaming updates - mimics real JSON streaming behavior
-    updates = [
+    updates: list[dict[str, Any]] = [
         {"title": "Stream"},
         {"title": "Stream Test Complete", "objects": [{"name": "obj1"}]},
         {

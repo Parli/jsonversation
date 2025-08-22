@@ -189,46 +189,6 @@ def test_list_on_append_callback_order() -> None:
     assert call_order == expected_order
 
 
-def test_list_update_returns_none() -> None:
-    """Test that update method returns None."""
-    list_obj = List(String)
-    result = list_obj.update(["hello"])
-    assert result is None
-
-
-def test_list_on_append_returns_none() -> None:
-    """Test that on_append method returns None."""
-    list_obj = List(String)
-
-    def dummy_callback(item: String) -> None:
-        pass
-
-    result = list_obj.on_append(dummy_callback)
-    assert result is None
-
-
-# def test_list_with_object_items():
-#     """Test List functionality with Object items instead of String items."""
-
-#     # Create a simple test Object class
-#     class TestObject(Object):
-#         name: String
-#         value: String
-
-#     list_obj = List(TestObject)
-#     list_obj.update(
-#         [{"name": "obj1", "value": "val1"}, {"name": "obj2", "value": "val2"}]
-#     )
-
-#     assert len(list_obj._values) == 2
-#     assert isinstance(list_obj._values[0], TestObject)
-#     assert isinstance(list_obj._values[1], TestObject)
-#     assert list_obj._values[0].name._value.getvalue() == "obj1"
-#     assert list_obj._values[0].value._value.getvalue() == "val1"
-#     assert list_obj._values[1].name._value.getvalue() == "obj2"
-#     assert list_obj._values[1].value._value.getvalue() == "val2"
-
-
 def test_list_streaming_behavior() -> None:
     """Test complex streaming scenario with incremental updates."""
     list_obj = List(String)

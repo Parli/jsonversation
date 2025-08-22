@@ -1,7 +1,7 @@
 from __future__ import annotations
 import typing
 import io
-from typing import Callable
+from typing import Any, Callable
 
 
 class StreamingObject[T]:
@@ -11,7 +11,7 @@ class StreamingObject[T]:
     def _complete(self) -> None: ...
 
 
-class Object(StreamingObject[dict]):
+class Object(StreamingObject[dict[str, Any]]):
     _keys: list[str]
     _parsed_keys: list[str]
 
@@ -30,7 +30,7 @@ class Object(StreamingObject[dict]):
             else:
                 setattr(self, key, type_hint())
 
-    def update(self, value: dict):
+    def update(self, value: dict[str, Any]) -> None:
         model_keys = self._keys
         for key in value.keys():
             if key not in model_keys:
@@ -62,7 +62,7 @@ class String(StreamingObject[str]):
         self._on_complete_funcs = []
         self._value = io.StringIO()
 
-    def update(self, value: str):
+    def update(self, value: str) -> None:
         current_buffer_value = self._value.getvalue()
         current_buffer_length = len(current_buffer_value)
         new_chunk = None
@@ -78,7 +78,7 @@ class String(StreamingObject[str]):
             self._value.write(new_chunk)
             [f(new_chunk) for f in self._on_append_funcs]
 
-        return
+        return None
 
     def _complete(self) -> None:
         for func in self._on_complete_funcs:
@@ -95,7 +95,7 @@ class String(StreamingObject[str]):
         return self._value.getvalue()
 
 
-class List[T: StreamingObject](StreamingObject[list]):
+class List[T: StreamingObject[Any]](StreamingObject[list[Any]]):
     _item_type: type[T]
     _values: list[T]
     _on_append_funcs: list[Callable[[T], None]]
@@ -108,7 +108,7 @@ class List[T: StreamingObject](StreamingObject[list]):
         self._on_append_funcs = []
         self._item_type = item_type
 
-    def update(self, value: list) -> None:
+    def update(self, value: list[Any]) -> None:
         if not value:
             return
 

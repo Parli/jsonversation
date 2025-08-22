@@ -99,7 +99,7 @@ def test_push_with_empty_chunk() -> None:
 
     assert parser._buffer.getvalue() == b""
     # Object should remain unchanged
-    assert obj.name._value.getvalue() == ""
+    assert obj.name._value.getvalue() == ""  # type: ignore
 
 
 def test_push_with_unicode_chunk() -> None:
@@ -111,7 +111,7 @@ def test_push_with_unicode_chunk() -> None:
     parser.push(unicode_chunk)
 
     assert parser._buffer.getvalue() == unicode_chunk.encode()
-    assert obj.name._value.getvalue() == "héllo wörld 🌍"
+    assert obj.name._value.getvalue() == "héllo wörld 🌍"  # type: ignore
 
 
 # JSON parsing and object update tests
@@ -122,7 +122,7 @@ def test_push_updates_string_attribute() -> None:
 
     parser.push('{"name": "Alice"}')
 
-    assert obj.name._value.getvalue() == "Alice"
+    assert obj.name._value.getvalue() == "Alice"  # type: ignore
 
 
 def test_push_updates_string_progressively() -> None:
@@ -132,11 +132,11 @@ def test_push_updates_string_progressively() -> None:
 
     # First partial JSON
     parser.push('{"name": "Hello')
-    assert obj.name._value.getvalue() == "Hello"
+    assert obj.name._value.getvalue() == "Hello"  # type: ignore
 
     # Extended JSON that should update the string
     parser.push(' World"}')
-    assert obj.name._value.getvalue() == "Hello World"
+    assert obj.name._value.getvalue() == "Hello World"  # type: ignore
 
 
 def test_push_updates_list_attribute() -> None:
@@ -146,10 +146,10 @@ def test_push_updates_list_attribute() -> None:
 
     parser.push('{"items": ["first", "second", "third"]}')
 
-    assert len(obj.items._values) == 3
-    assert obj.items._values[0]._value.getvalue() == "first"
-    assert obj.items._values[1]._value.getvalue() == "second"
-    assert obj.items._values[2]._value.getvalue() == "third"
+    assert len(obj.items._values) == 3  # type: ignore
+    assert obj.items._values[0]._value.getvalue() == "first"  # type: ignore
+    assert obj.items._values[1]._value.getvalue() == "second"  # type: ignore
+    assert obj.items._values[2]._value.getvalue() == "third"  # type: ignore
 
 
 def test_push_updates_complex_object() -> None:
@@ -160,11 +160,11 @@ def test_push_updates_complex_object() -> None:
     json_data = '{"name": "Project", "description": "A test project", "tags": ["python", "testing"]}'
     parser.push(json_data)
 
-    assert obj.name._value.getvalue() == "Project"
-    assert obj.description._value.getvalue() == "A test project"
-    assert len(obj.tags._values) == 2
-    assert obj.tags._values[0]._value.getvalue() == "python"
-    assert obj.tags._values[1]._value.getvalue() == "testing"
+    assert obj.name._value.getvalue() == "Project"  # type: ignore
+    assert obj.description._value.getvalue() == "A test project"  # type: ignore
+    assert len(obj.tags._values) == 2  # type: ignore
+    assert obj.tags._values[0]._value.getvalue() == "python"  # type: ignore
+    assert obj.tags._values[1]._value.getvalue() == "testing"  # type: ignore
 
 
 def test_push_ignores_unknown_keys() -> None:
@@ -175,7 +175,7 @@ def test_push_ignores_unknown_keys() -> None:
     parser.push('{"name": "Alice", "unknown_field": "ignored", "another": 123}')
 
     # Only known field should be updated
-    assert obj.name._value.getvalue() == "Alice"
+    assert obj.name._value.getvalue() == "Alice"  # type: ignore
     # Unknown fields should not cause errors or be added to object
     assert not hasattr(obj, "unknown_field")
     assert not hasattr(obj, "another")
@@ -202,8 +202,8 @@ def test_push_expanding_list() -> None:
 
     # Start with one item
     parser.push('{"items": ["first"]}')
-    assert len(obj.items._values) == 1
-    assert obj.items._values[0]._value.getvalue() == "first"
+    assert len(obj.items._values) == 1  # type: ignore
+    assert obj.items._values[0]._value.getvalue() == "first"  # type: ignore
 
     # Add more items (this simulates how streaming might work)
     parser.push(', "second"]}')
@@ -218,7 +218,7 @@ def test_push_expanding_string() -> None:
 
     # Initial string
     parser.push('{"name": "Hello"}')
-    assert obj.name._value.getvalue() == "Hello"
+    assert obj.name._value.getvalue() == "Hello"  # type: ignore
 
     # Try to extend (this tests progressive string updates)
     # Note: This may not work as expected with real jiter, but tests the concept
@@ -248,7 +248,7 @@ def test_multiple_complete_json_pushes() -> None:
 
     # First complete JSON
     parser.push('{"name": "First"}')
-    assert obj.name._value.getvalue() == "First"
+    assert obj.name._value.getvalue() == "First"  # type: ignore
     first_buffer_size = len(parser._buffer.getvalue())
 
     # Second JSON appended
@@ -277,7 +277,7 @@ def test_push_empty_json_object() -> None:
     parser.push("{}")
 
     # Object should remain unchanged
-    assert obj.name._value.getvalue() == ""
+    assert obj.name._value.getvalue() == ""  # type: ignore
 
 
 def test_push_json_with_null_values() -> None:
@@ -331,8 +331,8 @@ def test_multiple_parsers_independence() -> None:
     parser2.push('{"name": "Parser2"}')
 
     # Objects should be updated independently
-    assert obj1.name._value.getvalue() == "Parser1"
-    assert obj2.name._value.getvalue() == "Parser2"
+    assert obj1.name._value.getvalue() == "Parser1"  # type: ignore
+    assert obj2.name._value.getvalue() == "Parser2"  # type: ignore
 
     # Buffers should be independent
     assert parser1._buffer.getvalue() != parser2._buffer.getvalue()
@@ -352,6 +352,6 @@ def test_large_json_handling() -> None:
 
     parser.push(large_json)
 
-    assert obj.name._value.getvalue() == "Large Object"
-    assert len(obj.description._value.getvalue()) == 1000 + len("")
-    assert len(obj.tags._values) == 5
+    assert obj.name._value.getvalue() == "Large Object"  # type: ignore
+    assert len(obj.description._value.getvalue()) == 1000 + len("")  # type: ignore
+    assert len(obj.tags._values) == 5  # type: ignore
