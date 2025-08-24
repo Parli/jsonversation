@@ -1,0 +1,19 @@
+line-length = 120
+target-version = "py313"
+
+exclude = [
+    ".git",
+    "__pycache__",
+    ".venv-*",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".mypy_stubs"
+]
+
+[lint]
+select = ["E", "F", "B", "W", "S", "T201", "T203", "ASYNC"]
+ignore = ["E501", "E741", "S101", "S311", "S603", "S607", "B017"]
+
+[format]
+quote-style = "double"
+line-ending = "auto"
