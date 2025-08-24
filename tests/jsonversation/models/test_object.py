@@ -399,9 +399,7 @@ def test_object_nested_object_callbacks() -> None:
     obj.objects._values[1].name.on_append(name_callback)
 
     # Update with incremental changes
-    obj.update(
-        {"objects": [{"name": "initial1_updated"}, {"name": "initial2_also_updated"}]}
-    )
+    obj.update({"objects": [{"name": "initial1_updated"}, {"name": "initial2_also_updated"}]})
 
     assert name_changes == ["_updated", "_also_updated"]
 

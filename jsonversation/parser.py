@@ -17,7 +17,5 @@ class Parser:
             return None
 
         self._buffer.write(chunk.encode())
-        parsed_dict = jiter.from_json(
-            self._buffer.getvalue(), partial_mode="trailing-strings"
-        )
+        parsed_dict = jiter.from_json(self._buffer.getvalue(), partial_mode="trailing-strings")
         self._object.update(parsed_dict)
