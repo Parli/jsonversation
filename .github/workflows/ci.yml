@@ -1,0 +1,43 @@
+name: Run linters, static type checks, and tests
+
+on: [push]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    name: CI
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Read .python-version
+        id: python_version
+        run: echo ::set-output name=PYTHON_VERSION::$(cat .python-version)
+
+      - name: Set up Python environment
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ steps.python_version.outputs.PYTHON_VERSION }}
+
+      - name: Install and Configure uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "latest"
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Run linter (ruff)
+        uses: astral-sh/ruff-action@v3
+
+      - name: Run Formatter Check (ruff)
+        uses: astral-sh/ruff-action@v3
+        with:
+          args: "format --check"
+
+      - name: Run type checker (mypy)
+        run: uv run mypy jsonversation tests
+
+      - name: Run tests (pytest)
+        run: uv run pytest tests
