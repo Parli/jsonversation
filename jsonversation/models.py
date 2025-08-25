@@ -35,8 +35,9 @@ class Object(StreamingObject[dict[str, Any]]):
                 setattr(self, key, type_hint())
 
     def _complete(self) -> None:
-        last_key = self._parsed_keys[-1]
-        self.__getattribute__(last_key)._complete()
+        if self._parsed_keys:
+            last_key = self._parsed_keys[-1]
+            self.__getattribute__(last_key)._complete()
 
         for func in self._on_complete_funcs:
             func(self._value)

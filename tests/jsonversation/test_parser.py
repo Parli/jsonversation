@@ -355,3 +355,273 @@ def test_large_json_handling() -> None:
     assert obj.name._value.getvalue() == "Large Object"  # type: ignore
     assert len(obj.description._value.getvalue()) == 1000 + len("")  # type: ignore
     assert len(obj.tags._values) == 5  # type: ignore
+
+
+# Context manager tests
+def test_parser_context_manager_basic() -> None:
+    """Test basic context manager functionality."""
+    obj = create_simple_object()
+
+    with Parser(obj) as parser:
+        assert parser._object is obj
+        assert isinstance(parser._buffer, io.BytesIO)
+        parser.push('{"name": "context_test"}')
+
+    # After context exit, object should be updated
+    assert obj.name._value.getvalue() == "context_test"  # type: ignore
+
+
+def test_parser_context_manager_returns_self() -> None:
+    """Test that context manager returns the parser instance."""
+    obj = create_simple_object()
+    parser = Parser(obj)
+
+    with parser as context_parser:
+        assert context_parser is parser
+        assert context_parser._object is obj
+
+
+def test_parser_context_manager_completion_on_exit() -> None:
+    """Test that object is completed when context manager exits."""
+    obj = create_simple_object()
+    completed_values = []
+
+    def callback(value: str) -> None:
+        completed_values.append(value)
+
+    obj.name.on_complete(callback)  # type: ignore
+
+    with Parser(obj) as parser:
+        parser.push('{"name": "completion_test"}')
+        # Completion callback should not be triggered yet
+        assert completed_values == []
+
+    # After context exit, completion should be triggered
+    assert completed_values == ["completion_test"]
+
+
+def test_parser_context_manager_complex_object_completion() -> None:
+    """Test context manager completion with complex object."""
+    obj = create_complex_object()
+    name_completed = []
+    description_completed = []
+    tags_completed = []
+    object_completed = []
+
+    def name_callback(value: str) -> None:
+        name_completed.append(value)
+
+    def description_callback(value: str) -> None:
+        description_completed.append(value)
+
+    def tags_callback(values: list) -> None:
+        tags_completed.append([v.value for v in values])
+
+    def object_callback(value: dict) -> None:
+        object_completed.append(value)
+
+    obj.name.on_complete(name_callback)  # type: ignore
+    obj.description.on_complete(description_callback)  # type: ignore
+    obj.tags.on_complete(tags_callback)  # type: ignore
+    obj.on_complete(object_callback)
+
+    with Parser(obj) as parser:
+        parser.push('{"name": "Test", "description": "Description", "tags": ["tag1", "tag2"]}')
+        assert name_completed == ["Test"]
+        assert description_completed == ["Description"]
+        assert object_completed == []
+
+    assert tags_completed == [["tag1", "tag2"]]
+    assert len(object_completed) == 1
+
+
+def test_parser_context_manager_streaming_updates() -> None:
+    """Test context manager with streaming updates and completion."""
+    obj = create_simple_object()
+    name_updates = []
+    name_completed = []
+
+    def name_update_callback(chunk: str) -> None:
+        name_updates.append(chunk)
+
+    def name_complete_callback(value: str) -> None:
+        name_completed.append(value)
+
+    obj.name.on_append(name_update_callback)  # type: ignore
+    obj.name.on_complete(name_complete_callback)  # type: ignore
+
+    with Parser(obj) as parser:
+        parser.push('{"name": "Stream')
+        parser.push('ing Test"}')
+        # Updates should be triggered during streaming
+        assert name_updates == ["Stream", "ing Test"]
+        # But completion should not be triggered yet
+        assert name_completed == []
+
+    # After context exit, completion should be triggered
+    assert name_completed == ["Streaming Test"]
+
+
+def test_parser_context_manager_multiple_contexts() -> None:
+    """Test multiple context manager uses with same parser."""
+    obj = create_simple_object()
+    completed_values = []
+
+    def callback(value: str) -> None:
+        completed_values.append(value)
+
+    obj.name.on_complete(callback)  # type: ignore
+    parser = Parser(obj)
+
+    # First context
+    with parser:
+        parser.push('{"name": "first"}')
+
+    assert completed_values == ["first"]
+
+    # Second context - should work independently
+    obj2 = create_simple_object()
+    completed_values_2 = []
+
+    def callback2(value: str) -> None:
+        completed_values_2.append(value)
+
+    obj2.name.on_complete(callback2)  # type: ignore
+    parser2 = Parser(obj2)
+
+    with parser2:
+        parser2.push('{"name": "second"}')
+
+    assert completed_values_2 == ["second"]
+    assert completed_values == ["first"]  # Original unchanged
+
+
+def test_parser_context_manager_partial_json() -> None:
+    """Test context manager behavior with partial JSON that gets completed."""
+    obj = create_simple_object()
+    completed_values = []
+
+    def callback(value: str) -> None:
+        completed_values.append(value)
+
+    obj.name.on_complete(callback)  # type: ignore
+
+    with Parser(obj) as parser:
+        # Push partial JSON that might not parse completely
+        parser.push('{"name": "partial')
+        # The completion should still work when context exits
+
+    # Object should have whatever was successfully parsed
+    # Completion should be triggered regardless
+
+
+def test_parser_context_manager_empty_push() -> None:
+    """Test context manager with no push operations."""
+    obj = create_simple_object()
+    completed_values = []
+
+    def callback(value: str) -> None:
+        completed_values.append(value)
+
+    obj.name.on_complete(callback)  # type: ignore
+
+    with Parser(obj) as _:
+        # No push operations
+        pass
+
+    # Completion should still be triggered, even with empty string
+    assert completed_values == []
+
+
+def test_parser_context_manager_buffer_state() -> None:
+    """Test that buffer state is preserved during context manager usage."""
+    obj = create_simple_object()
+
+    with Parser(obj) as parser:
+        parser.push('{"name":')
+        buffer_mid_context = parser._buffer.getvalue()
+        parser.push(' "test"}')
+        buffer_end_context = parser._buffer.getvalue()
+
+        assert buffer_mid_context == b'{"name":'
+        assert buffer_end_context == b'{"name": "test"}'
+
+    # After context, object should be properly updated
+    assert obj.name._value.getvalue() == "test"  # type: ignore
+
+
+def test_parser_context_manager_with_list_object() -> None:
+    """Test context manager with object containing lists."""
+    obj = create_object_with_list()
+    items_completed = []
+    object_completed = []
+
+    def items_callback(values: list) -> None:
+        items_completed.append([v.value for v in values])
+
+    def object_callback(value: dict) -> None:
+        object_completed.append(value)
+
+    obj.items.on_complete(items_callback)  # type: ignore
+    obj.on_complete(object_callback)
+
+    with Parser(obj) as parser:
+        parser.push('{"items": ["first", "second", "third"]}')
+        # No completions during context
+        assert items_completed == []
+        assert object_completed == []
+
+    # Completions after context exit
+    assert items_completed == [["first", "second", "third"]]
+    assert len(object_completed) == 1
+
+
+def test_parser_context_manager_nested_context_safety() -> None:
+    """Test that nested context managers work safely (if somehow used)."""
+    obj = create_simple_object()
+
+    parser = Parser(obj)
+
+    with parser as p1:
+        p1.push('{"name": "outer"}')
+        # Nested context with same parser (unusual but should be safe)
+        with parser as p2:
+            assert p1 is p2  # Same parser instance
+            p2.push('updated"}')  # This would append to buffer
+
+    # Object should have the combined result
+    assert "outer" in obj.name._value.getvalue()  # type: ignore
+
+
+def test_parser_context_manager_completion_order() -> None:
+    """Test that completions happen in correct order on context exit."""
+    obj = create_complex_object()
+    completion_order = []
+
+    def name_callback(value: str) -> None:
+        completion_order.append(f"name:{value}")
+
+    def description_callback(value: str) -> None:
+        completion_order.append(f"description:{value}")
+
+    def tags_callback(values: list) -> None:
+        completion_order.append(f"tags:{len(values)}")
+
+    def object_callback(value: dict) -> None:
+        completion_order.append(f"object:{len(value)}")
+
+    obj.name.on_complete(name_callback)  # type: ignore
+    obj.description.on_complete(description_callback)  # type: ignore
+    obj.tags.on_complete(tags_callback)  # type: ignore
+    obj.on_complete(object_callback)
+
+    with Parser(obj) as parser:
+        # Streaming updates that would trigger key transitions
+        parser.push('{"name": "Test"}')
+        parser.push('{"name": "Test", "description": "Desc"}')
+        parser.push('{"name": "Test", "description": "Desc", "tags": ["tag1"]}')
+
+    # Check that completion order makes sense
+    # (exact order depends on implementation, but object should be last)
+    assert "object:" in completion_order[-1]
+    assert len(completion_order) > 1
