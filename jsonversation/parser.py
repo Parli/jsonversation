@@ -1,3 +1,5 @@
+from __future__ import annotations
+from typing import Any
 import jiter
 import io
 
@@ -12,6 +14,13 @@ class Parser:
         self._object = obj
         self._buffer = io.BytesIO()
 
+    def __enter__(self) -> Parser:
+        return self
+
+    def __exit__(self, exc_type: type[BaseException] | None, *args: list[Any]) -> None:
+        if exc_type is None:
+            self.complete()
+
     def push(self, chunk: str) -> None:
         if not chunk.strip():
             return None
@@ -19,3 +28,6 @@ class Parser:
         self._buffer.write(chunk.encode())
         parsed_dict = jiter.from_json(self._buffer.getvalue(), partial_mode="trailing-strings")
         self._object.update(parsed_dict)
+
+    def complete(self) -> None:
+        self._object._complete()

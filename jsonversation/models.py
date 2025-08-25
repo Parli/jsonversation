@@ -14,11 +14,15 @@ class StreamingObject[T]:
 class Object(StreamingObject[dict[str, Any]]):
     _keys: list[str]
     _parsed_keys: list[str]
+    _on_complete_funcs: list[Callable[[dict[str, Any]], None]]
+    _value: dict[str, Any]
 
     def __init__(self) -> None:
         super().__init__()
         self._keys = []
         self._parsed_keys = []
+        self._value = {}
+        self._on_complete_funcs = []
 
         for key, type_hint in type(self).__annotations__.items():
             self._keys.append(key)
@@ -29,6 +33,19 @@ class Object(StreamingObject[dict[str, Any]]):
                 setattr(self, key, type_hint.__origin__(item_cls))
             else:
                 setattr(self, key, type_hint())
+
+    def _complete(self) -> None:
+        last_key = self._parsed_keys[-1]
+        self.__getattribute__(last_key)._complete()
+
+        for func in self._on_complete_funcs:
+            func(self._value)
+
+    def _last_parsed_key(self, default: str) -> str:
+        if self._parsed_keys:
+            return self._parsed_keys[-1]
+
+        return default
 
     def update(self, value: dict[str, Any]) -> None:
         model_keys = self._keys
@@ -45,10 +62,15 @@ class Object(StreamingObject[dict[str, Any]]):
             else:
                 if key not in self._parsed_keys:
                     # this is the new key, we need to complete the previous object
-                    self.__getattribute__(self._parsed_keys[-1])._complete()
+                    self.__getattribute__(self._last_parsed_key(key))._complete()
                     self._parsed_keys.append(key)
 
-        return
+            self._value[self._last_parsed_key(key)] = self.__getattribute__(self._last_parsed_key(key)).value
+
+        return None
+
+    def on_complete(self, func: Callable[[dict[str, Any]], None]) -> None:
+        self._on_complete_funcs.append(func)
 
 
 class String(StreamingObject[str]):
