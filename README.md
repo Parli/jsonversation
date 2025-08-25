@@ -42,12 +42,13 @@ Coming soon!
     json_chunk1 = '{"role": "assistant", "content": "Hello'
     json_chunk2 = ' world!", "timestamp": "2024-01-01T12:00:00Z"}'
     
-    parser.push(json_chunk1)
-    print(message.content.value)  # "Hello"
-    
-    parser.push(json_chunk2)
-    print(message.content.value)  # "Hello world!"
-    print(message.role.value)     # "assistant"
+    with Parser(message) as parser:
+        parser.push(json_chunk1)
+        print(message.content.value)  # "Hello"
+
+        parser.push(json_chunk2)
+        print(message.content.value)  # "Hello world!"
+        print(message.role.value)     # "assistant"
 ```
 
 
@@ -62,7 +63,6 @@ Coming soon!
         tokens: List[String]
     
     response = StreamingResponse()
-    parser = Parser(response)
     
     # Set up real-time callbacks
     def on_message_update(chunk: str):
@@ -79,8 +79,9 @@ Coming soon!
     response.message.on_complete(on_message_complete)
     
     # Simulate streaming data
-    parser.push('{"message": "The quick")
-    parser.push(' brown fox", "tokens": ["The", "quick"]}')
+    with Parser(response) as parser:
+        parser.push('{"message": "The quick")
+        parser.push(' brown fox", "tokens": ["The", "quick"]}')
 ```
 
 
@@ -107,7 +108,6 @@ Coming soon!
     
     # Create and use the parser
     post = BlogPost()
-    parser = Parser(post)
     
     # Process complex JSON
     complex_json = '''
@@ -132,13 +132,13 @@ Coming soon!
     }
     '''
     
-    parser.push(complex_json)
-    
-    # Access nested data
-    print(post.title.value)                    # "Streaming JSON in Python"
-    print(post.author.name.value)              # "Jane Doe"
-    print(post.comments.value[0].text.value)   # "Great article!"
-    print([tag.value for tag in post.tags.value])  # ["python", "json", "streaming"]
+    with Parser(post) as parser:
+        parser.push(complex_json)
+        # Access nested data
+        print(post.title.value)                    # "Streaming JSON in Python"
+        print(post.author.name.value)              # "Jane Doe"
+        print(post.comments.value[0].text.value)   # "Great article!"
+        print([tag.value for tag in post.tags.value])  # ["python", "json", "streaming"]
 ```
 
 
@@ -164,7 +164,6 @@ Here's how you might use jsonversation with a streaming API like OpenAI's chat c
     
     async def stream_chat_completion():
         completion = ChatCompletion()
-        parser = Parser(completion)
     
         # Set up callbacks for real-time processing
         def on_new_choice(choice: ChatChoice):
@@ -183,10 +182,11 @@ Here's how you might use jsonversation with a streaming API like OpenAI's chat c
                     "stream": True
                 }
             ) as response:
-                async for chunk in response.aiter_text():
-                    if chunk:
-                        parser.push(chunk)
-                        # Process data in real-time as it arrives
+                with Parser(completion) as parser:
+                    async for chunk in response.aiter_text():
+                        if chunk:
+                            parser.push(chunk)
+                            # Process data in real-time as it arrives
 ```
 
 
@@ -205,7 +205,7 @@ Here's how you might use jsonversation with a streaming API like OpenAI's chat c
     
     async def handle_websocket():
         live_data = LiveData()
-        parser = Parser(live_data)
+        
     
         def on_status_change(chunk: str):
             print(f"Status update: {live_data.status.value}")
@@ -217,9 +217,10 @@ Here's how you might use jsonversation with a streaming API like OpenAI's chat c
         live_data.values.on_append(on_new_value)
     
         async with websockets.connect("ws://example.com/live") as websocket:
-            async for message in websocket:
-                parser.push(message)
-                # Data is processed incrementally
+            with Parser(live_data) as parser:
+                async for message in websocket:
+                    parser.push(message)
+                    # Data is processed incrementally
 ```
 
 
