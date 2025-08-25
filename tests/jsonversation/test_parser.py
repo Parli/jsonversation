@@ -1,5 +1,6 @@
 import pytest
 import io
+from typing import Any
 from jsonversation.parser import Parser
 from jsonversation.models import Object, String, List
 
@@ -384,7 +385,7 @@ def test_parser_context_manager_returns_self() -> None:
 def test_parser_context_manager_completion_on_exit() -> None:
     """Test that object is completed when context manager exits."""
     obj = create_simple_object()
-    completed_values = []
+    completed_values: list[str] = []
 
     def callback(value: str) -> None:
         completed_values.append(value)
@@ -403,10 +404,10 @@ def test_parser_context_manager_completion_on_exit() -> None:
 def test_parser_context_manager_complex_object_completion() -> None:
     """Test context manager completion with complex object."""
     obj = create_complex_object()
-    name_completed = []
-    description_completed = []
-    tags_completed = []
-    object_completed = []
+    name_completed: list[str] = []
+    description_completed: list[str] = []
+    tags_completed: list[list[str]] = []
+    object_completed: list[dict[str, Any]] = []
 
     def name_callback(value: str) -> None:
         name_completed.append(value)
@@ -414,10 +415,10 @@ def test_parser_context_manager_complex_object_completion() -> None:
     def description_callback(value: str) -> None:
         description_completed.append(value)
 
-    def tags_callback(values: list) -> None:
+    def tags_callback(values: list[String]) -> None:
         tags_completed.append([v.value for v in values])
 
-    def object_callback(value: dict) -> None:
+    def object_callback(value: dict[str, Any]) -> None:
         object_completed.append(value)
 
     obj.name.on_complete(name_callback)  # type: ignore
@@ -438,8 +439,8 @@ def test_parser_context_manager_complex_object_completion() -> None:
 def test_parser_context_manager_streaming_updates() -> None:
     """Test context manager with streaming updates and completion."""
     obj = create_simple_object()
-    name_updates = []
-    name_completed = []
+    name_updates: list[str] = []
+    name_completed: list[str] = []
 
     def name_update_callback(chunk: str) -> None:
         name_updates.append(chunk)
@@ -465,7 +466,7 @@ def test_parser_context_manager_streaming_updates() -> None:
 def test_parser_context_manager_multiple_contexts() -> None:
     """Test multiple context manager uses with same parser."""
     obj = create_simple_object()
-    completed_values = []
+    completed_values: list[str] = []
 
     def callback(value: str) -> None:
         completed_values.append(value)
@@ -481,7 +482,7 @@ def test_parser_context_manager_multiple_contexts() -> None:
 
     # Second context - should work independently
     obj2 = create_simple_object()
-    completed_values_2 = []
+    completed_values_2: list[str] = []
 
     def callback2(value: str) -> None:
         completed_values_2.append(value)
@@ -499,7 +500,7 @@ def test_parser_context_manager_multiple_contexts() -> None:
 def test_parser_context_manager_partial_json() -> None:
     """Test context manager behavior with partial JSON that gets completed."""
     obj = create_simple_object()
-    completed_values = []
+    completed_values: list[str] = []
 
     def callback(value: str) -> None:
         completed_values.append(value)
@@ -518,7 +519,7 @@ def test_parser_context_manager_partial_json() -> None:
 def test_parser_context_manager_empty_push() -> None:
     """Test context manager with no push operations."""
     obj = create_simple_object()
-    completed_values = []
+    completed_values: list[str] = []
 
     def callback(value: str) -> None:
         completed_values.append(value)
@@ -553,13 +554,13 @@ def test_parser_context_manager_buffer_state() -> None:
 def test_parser_context_manager_with_list_object() -> None:
     """Test context manager with object containing lists."""
     obj = create_object_with_list()
-    items_completed = []
-    object_completed = []
+    items_completed: list[list[str]] = []
+    object_completed: list[dict[str, Any]] = []
 
-    def items_callback(values: list) -> None:
+    def items_callback(values: list[String]) -> None:
         items_completed.append([v.value for v in values])
 
-    def object_callback(value: dict) -> None:
+    def object_callback(value: dict[str, Any]) -> None:
         object_completed.append(value)
 
     obj.items.on_complete(items_callback)  # type: ignore
@@ -596,7 +597,7 @@ def test_parser_context_manager_nested_context_safety() -> None:
 def test_parser_context_manager_completion_order() -> None:
     """Test that completions happen in correct order on context exit."""
     obj = create_complex_object()
-    completion_order = []
+    completion_order: list[str] = []
 
     def name_callback(value: str) -> None:
         completion_order.append(f"name:{value}")
@@ -604,10 +605,10 @@ def test_parser_context_manager_completion_order() -> None:
     def description_callback(value: str) -> None:
         completion_order.append(f"description:{value}")
 
-    def tags_callback(values: list) -> None:
+    def tags_callback(values: list[String]) -> None:
         completion_order.append(f"tags:{len(values)}")
 
-    def object_callback(value: dict) -> None:
+    def object_callback(value: dict[str, Any]) -> None:
         completion_order.append(f"object:{len(value)}")
 
     obj.name.on_complete(name_callback)  # type: ignore
