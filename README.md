@@ -251,35 +251,6 @@ with Parser(post) as parser:
 
 
 
-## Advanced Usage
-
-
-
-### Custom Callbacks
-
-```python
-    class ProgressTracker(Object):
-        current: String
-        total: String
-        percentage: String
-    
-    tracker = ProgressTracker()
-    parser = Parser(tracker)
-    
-    def calculate_progress(chunk: str):
-        try:
-            current = int(tracker.current.value)
-            total = int(tracker.total.value)
-            if total > 0:
-                percentage = (current / total) * 100
-                print(f"Progress: {percentage:.1f}%")
-        except (ValueError, ZeroDivisionError):
-            pass
-    
-    tracker.current.on_append(lambda _: calculate_progress(""))
-    tracker.total.on_append(lambda _: calculate_progress(""))
-```
-
 
 ## Requirements
 
