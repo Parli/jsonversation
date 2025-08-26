@@ -73,6 +73,10 @@ class Object(StreamingObject[dict[str, Any]]):
     def on_complete(self, func: Callable[[dict[str, Any]], None]) -> None:
         self._on_complete_funcs.append(func)
 
+    @property
+    def value(self) -> dict[str, Any]:
+        return self._value
+
 
 class String(StreamingObject[str]):
     _value: io.StringIO
