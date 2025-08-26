@@ -164,3 +164,30 @@ class List[T: StreamingObject[Any]](StreamingObject[list[Any]]):
     @property
     def value(self) -> list[T]:
         return self._values
+
+
+class Atomic[T](StreamingObject[T]):
+    _is_empty: bool
+    _value: T | None
+    _on_complete_funcs: list[Callable[[T | None], None]]
+
+    def __init__(self, item_cls: type[T]) -> None:
+        self._is_empty = True
+        self._value = None
+        self._on_complete_funcs = []
+
+    def update(self, value: T) -> None:
+        self._value = value
+        self._is_empty = False
+
+    def on_complete(self, func: Callable[[T | None], None]) -> None:
+        self._on_complete_funcs.append(func)
+
+    def _complete(self) -> None:
+        if not self._is_empty:
+            for func in self._on_complete_funcs:
+                func(self._value)
+
+    @property
+    def value(self) -> T | None:
+        return self._value

@@ -25,30 +25,34 @@ Coming soon!
 ### Basic Usage
 
 ```python
-    from jsonversation import Parser
-    from jsonversation.models import Object, String, List
-    
-    # Define your data structure
-    class ChatMessage(Object):
-        role: String
-        content: String
-        timestamp: String
-    
-    # Create a parser
-    message = ChatMessage()
-    parser = Parser(message)
-    
-    # Process streaming JSON data
-    json_chunk1 = '{"role": "assistant", "content": "Hello'
-    json_chunk2 = ' world!", "timestamp": "2024-01-01T12:00:00Z"}'
-    
-    with Parser(message) as parser:
-        parser.push(json_chunk1)
-        print(message.content.value)  # "Hello"
+from jsonversation import Parser
+from jsonversation.models import Object, String, List, Atomic
 
-        parser.push(json_chunk2)
-        print(message.content.value)  # "Hello world!"
-        print(message.role.value)     # "assistant"
+# Define your data structure
+class ChatMessage(Object):
+    role: String
+    content: String
+    timestamp: String
+    token_count: Atomic[int]
+    is_complete: Atomic[bool]
+
+# Create a parser
+message = ChatMessage()
+parser = Parser(message)
+
+# Process streaming JSON data
+json_chunk1 = '{"role": "assistant", "content": "Hello'
+json_chunk2 = ' world!", "timestamp": "2024-01-01T12:00:00Z", "token_count": 42, "is_complete": true}'
+
+with Parser(message) as parser:
+    parser.push(json_chunk1)
+    print(message.content.value)  # "Hello"
+
+    parser.push(json_chunk2)
+    print(message.content.value)     # "Hello world!"
+    print(message.role.value)        # "assistant"
+    print(message.token_count.value) # 42
+    print(message.is_complete.value) # True
 ```
 
 
@@ -82,6 +86,47 @@ Coming soon!
     with Parser(response) as parser:
         parser.push('{"message": "The quick")
         parser.push(' brown fox", "tokens": ["The", "quick"]}')
+```
+
+### Working with Atomic Types
+
+The `Atomic` class handles primitive types that arrive as complete values rather than streaming text:
+
+```python
+from jsonversation.models import Object, String, Atomic
+
+class APIResponse(Object):
+    message: String
+    status_code: Atomic[int]
+    success: Atomic[bool]
+    response_time: Atomic[float]
+    metadata: Atomic[dict]
+
+response = APIResponse()
+
+# Set up callbacks for atomic values
+def on_status_change(status: int | None):
+    if status:
+        print(f"Status code: {status}")
+        if status >= 400:
+            print("Error response detected!")
+
+def on_completion(success: bool | None):
+    if success is not None:
+        print(f"Request {'succeeded' if success else 'failed'}")
+
+response.status_code.on_complete(on_status_change)
+response.success.on_complete(on_completion)
+
+# Process JSON with atomic values
+with Parser(response) as parser:
+    parser.push('{"message": "Processing request", "status_code": 200}')
+    parser.push('{"message": "Request completed", "status_code": 200, "success": true, "response_time": 1.23}')
+    # Callbacks will be triggered when atomic values are completed
+
+print(response.status_code.value)  # 200
+print(response.success.value)      # True
+print(response.response_time.value) # 1.23
 ```
 
 
