@@ -19,7 +19,7 @@ class Parser:
 
     def __exit__(self, exc_type: type[BaseException] | None, *args: list[Any]) -> None:
         if exc_type is None:
-            self.complete()
+            self._object._complete()
 
     def push(self, chunk: str) -> None:
         if not chunk.strip():
@@ -28,6 +28,3 @@ class Parser:
         self._buffer.write(chunk.encode())
         parsed_dict = jiter.from_json(self._buffer.getvalue(), partial_mode="trailing-strings")
         self._object.update(parsed_dict)
-
-    def complete(self) -> None:
-        self._object._complete()
