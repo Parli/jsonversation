@@ -464,7 +464,7 @@ def test_object_complete_with_lists() -> None:
     )
 
     assert len(completed_items) != 0
-    assert [v.value for v in completed_items] == ["item1", "item2"]
+    assert [v.get_value() for v in completed_items] == ["item1", "item2"]
 
 
 def test_object_on_complete_single_callback() -> None:
@@ -581,7 +581,7 @@ def test_object_complete_with_list() -> None:
         completed_values.append(value)
 
     def list_callback(values: list[String]) -> None:
-        list_completed.extend([v.value for v in values])
+        list_completed.extend([v.get_value() for v in values])
 
     obj.on_complete(callback)
     obj.items.on_complete(list_callback)

@@ -66,15 +66,14 @@ class Object(StreamingObject[dict[str, Any]]):
                     self.__getattribute__(self._last_parsed_key(key))._complete()
                     self._parsed_keys.append(key)
 
-            self._value[self._last_parsed_key(key)] = self.__getattribute__(self._last_parsed_key(key)).value
+            self._value[self._last_parsed_key(key)] = self.__getattribute__(self._last_parsed_key(key)).get_value()
 
         return None
 
     def on_complete(self, func: Callable[[dict[str, Any]], None]) -> None:
         self._on_complete_funcs.append(func)
 
-    @property
-    def value(self) -> dict[str, Any]:
+    def get_value(self) -> dict[str, Any]:
         return self._value
 
 
@@ -109,7 +108,7 @@ class String(StreamingObject[str]):
 
     def _complete(self) -> None:
         for func in self._on_complete_funcs:
-            func(self.value)
+            func(self.get_value())
 
     def on_append(self, func: Callable[[str], None]) -> None:
         self._on_append_funcs.append(func)
@@ -117,8 +116,7 @@ class String(StreamingObject[str]):
     def on_complete(self, func: Callable[[str], None]) -> None:
         self._on_complete_funcs.append(func)
 
-    @property
-    def value(self) -> str:
+    def get_value(self) -> str:
         return self._value.getvalue()
 
 
@@ -165,8 +163,7 @@ class List[T: StreamingObject[Any]](StreamingObject[list[Any]]):
         for func in self._on_complete_funcs:
             func(self._values)
 
-    @property
-    def value(self) -> list[T]:
+    def get_value(self) -> list[T]:
         return self._values
 
 
@@ -192,6 +189,5 @@ class Atomic[T](StreamingObject[T]):
             for func in self._on_complete_funcs:
                 func(self._value)
 
-    @property
-    def value(self) -> T | None:
+    def get_value(self) -> T | None:
         return self._value

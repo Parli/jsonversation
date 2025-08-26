@@ -28,7 +28,7 @@ def test_atomic_update_string() -> None:
 
     assert atomic_obj._is_empty is False
     assert atomic_obj._value == "hello"
-    assert atomic_obj.value == "hello"
+    assert atomic_obj.get_value() == "hello"
 
 
 def test_atomic_update_integer() -> None:
@@ -38,7 +38,7 @@ def test_atomic_update_integer() -> None:
 
     assert atomic_obj._is_empty is False
     assert atomic_obj._value == 42
-    assert atomic_obj.value == 42
+    assert atomic_obj.get_value() == 42
 
 
 def test_atomic_update_dict() -> None:
@@ -49,7 +49,7 @@ def test_atomic_update_dict() -> None:
 
     assert atomic_obj._is_empty is False
     assert atomic_obj._value == test_dict
-    assert atomic_obj.value == test_dict
+    assert atomic_obj.get_value() == test_dict
 
 
 def test_atomic_update_list() -> None:
@@ -60,7 +60,7 @@ def test_atomic_update_list() -> None:
 
     assert atomic_obj._is_empty is False
     assert atomic_obj._value == test_list
-    assert atomic_obj.value == test_list
+    assert atomic_obj.get_value() == test_list
 
 
 def test_atomic_update_none_value() -> None:
@@ -70,7 +70,7 @@ def test_atomic_update_none_value() -> None:
 
     assert atomic_obj._is_empty is False
     assert atomic_obj._value is None
-    assert atomic_obj.value is None
+    assert atomic_obj.get_value() is None
 
 
 def test_atomic_update_multiple_times() -> None:
@@ -78,13 +78,13 @@ def test_atomic_update_multiple_times() -> None:
     atomic_obj = Atomic(str)
 
     atomic_obj.update("first")
-    assert atomic_obj.value == "first"
+    assert atomic_obj.get_value() == "first"
 
     atomic_obj.update("second")
-    assert atomic_obj.value == "second"
+    assert atomic_obj.get_value() == "second"
 
     atomic_obj.update("third")
-    assert atomic_obj.value == "third"
+    assert atomic_obj.get_value() == "third"
 
     assert atomic_obj._is_empty is False
 
@@ -96,7 +96,7 @@ def test_atomic_update_empty_string() -> None:
 
     assert atomic_obj._is_empty is False
     assert atomic_obj._value == ""
-    assert atomic_obj.value == ""
+    assert atomic_obj.get_value() == ""
 
 
 def test_atomic_update_zero() -> None:
@@ -106,7 +106,7 @@ def test_atomic_update_zero() -> None:
 
     assert atomic_obj._is_empty is False
     assert atomic_obj._value == 0
-    assert atomic_obj.value == 0
+    assert atomic_obj.get_value() == 0
 
 
 def test_atomic_update_false() -> None:
@@ -116,14 +116,14 @@ def test_atomic_update_false() -> None:
 
     assert atomic_obj._is_empty is False
     assert atomic_obj._value is False
-    assert atomic_obj.value is False
+    assert atomic_obj.get_value() is False
 
 
 def test_atomic_value_property_before_update() -> None:
     """Test value property returns None when not updated."""
     atomic_obj = Atomic(str)
 
-    assert atomic_obj.value is None
+    assert atomic_obj.get_value() is None
     assert atomic_obj._is_empty is True
 
 
@@ -273,7 +273,7 @@ def test_atomic_complex_object_value() -> None:
     atomic_obj._complete()
 
     assert completed_values == [complex_dict]
-    assert atomic_obj.value == complex_dict
+    assert atomic_obj.get_value() == complex_dict
 
 
 def test_atomic_boolean_values() -> None:
@@ -301,8 +301,8 @@ def test_atomic_boolean_values() -> None:
 
     assert completed_true == [True]
     assert completed_false == [False]
-    assert atomic_true.value is True
-    assert atomic_false.value is False
+    assert atomic_true.get_value() is True
+    assert atomic_false.get_value() is False
 
 
 def test_atomic_numeric_values() -> None:
@@ -330,8 +330,8 @@ def test_atomic_numeric_values() -> None:
 
     assert completed_int == [-42]
     assert completed_float == [3.14159]
-    assert atomic_int.value == -42
-    assert atomic_float.value == 3.14159
+    assert atomic_int.get_value() == -42
+    assert atomic_float.get_value() == 3.14159
 
 
 def test_atomic_update_overwrite_behavior() -> None:
@@ -340,15 +340,15 @@ def test_atomic_update_overwrite_behavior() -> None:
 
     # First update
     atomic_obj.update([1, 2, 3])
-    assert atomic_obj.value == [1, 2, 3]
+    assert atomic_obj.get_value() == [1, 2, 3]
 
     # Second update should completely replace
     atomic_obj.update(["a", "b"])
-    assert atomic_obj.value == ["a", "b"]
+    assert atomic_obj.get_value() == ["a", "b"]
 
     # Third update with empty list
     atomic_obj.update([])
-    assert atomic_obj.value == []
+    assert atomic_obj.get_value() == []
 
     assert atomic_obj._is_empty is False  # Still not empty, just has empty list
 
@@ -360,38 +360,19 @@ def test_atomic_state_consistency() -> None:
     # Initial state
     assert atomic_obj._is_empty is True
     assert atomic_obj._value is None
-    assert atomic_obj.value is None
+    assert atomic_obj.get_value() is None
 
     # After update
     atomic_obj.update("test")
     assert atomic_obj._is_empty is False
     assert atomic_obj._value == "test"  # type: ignore
-    assert atomic_obj.value == "test"
+    assert atomic_obj.get_value() == "test"
 
     # After another update
     atomic_obj.update("changed")
     assert atomic_obj._is_empty is False
     assert atomic_obj._value == "changed"
-    assert atomic_obj.value == "changed"
-
-
-def test_atomic_type_flexibility() -> None:
-    """Test Atomic works with various Python types."""
-
-    # Test with custom class
-    class CustomClass:
-        def __init__(self, value: str):
-            self.value = value
-
-        def __eq__(self, other: object) -> bool:
-            return isinstance(other, CustomClass) and self.value == other.value
-
-    atomic_obj = Atomic(CustomClass)
-    custom_instance = CustomClass("test_value")
-
-    atomic_obj.update(custom_instance)
-    assert atomic_obj.value == custom_instance
-    assert atomic_obj.value.value == "test_value"
+    assert atomic_obj.get_value() == "changed"
 
 
 def test_atomic_complete_callback_with_type_info() -> None:

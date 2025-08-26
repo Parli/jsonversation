@@ -416,7 +416,7 @@ def test_parser_context_manager_complex_object_completion() -> None:
         description_completed.append(value)
 
     def tags_callback(values: list[String]) -> None:
-        tags_completed.append([v.value for v in values])
+        tags_completed.append([v.get_value() for v in values])
 
     def object_callback(value: dict[str, Any]) -> None:
         object_completed.append(value)
@@ -558,7 +558,7 @@ def test_parser_context_manager_with_list_object() -> None:
     object_completed: list[dict[str, Any]] = []
 
     def items_callback(values: list[String]) -> None:
-        items_completed.append([v.value for v in values])
+        items_completed.append([v.get_value() for v in values])
 
     def object_callback(value: dict[str, Any]) -> None:
         object_completed.append(value)
