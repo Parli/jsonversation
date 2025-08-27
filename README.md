@@ -23,17 +23,16 @@ Coming soon!
 ### Basic Usage
 
 ```python
-from jsonversation.parser import Parser
-from jsonversation.models import Object, String, Atomic
+import jsonversation as jv
 
 
 # Define your data structure
-class ChatMessage(Object):
-    role: String
-    content: String
-    timestamp: String
-    token_count: Atomic[int]
-    is_complete: Atomic[bool]
+class ChatMessage(jv.Object):
+    role: jv.String
+    content: jv.String
+    timestamp: jv.String
+    token_count: jv.Atomic[int]
+    is_complete: jv.Atomic[bool]
 
 
 # Create a parser
@@ -43,28 +42,27 @@ message = ChatMessage()
 json_chunk1 = '{"role": "assistant", "content": "Hello'
 json_chunk2 = ' world!", "timestamp": "2024-01-01T12:00:00Z", "token_count": 42, "is_complete": true}'
 
-with Parser(message) as parser:
+with jv.Parser(message) as parser:
     parser.push(json_chunk1)
-    print(message.content.value)  # "Hello"
+    print(message.content.get_value())  # "Hello"
 
     parser.push(json_chunk2)
-    print(message.content.value)  # "Hello world!"
-    print(message.role.value)  # "assistant"
-    print(message.token_count.value)  # 42
-    print(message.is_complete.value)  # True
+    print(message.content.get_value())  # "Hello world!"
+    print(message.role.get_value())  # "assistant"
+    print(message.token_count.get_value())  # 42
+    print(message.is_complete.get_value())  # True
 ```
 
 
 ### Real-time Callbacks
 
 ```python
-from jsonversation.parser import Parser
-from jsonversation.models import Object, String, List
+import jsonversation as jv
 
 
-class StreamingResponse(Object):
-    message: String
-    tokens: List[String]
+class StreamingResponse(jv.Object):
+    message: jv.String
+    tokens: jv.List[jv.String]
 
 
 response = StreamingResponse()
@@ -75,8 +73,8 @@ def on_message_update(chunk: str):
     print(f"New text: {chunk}")
 
 
-def on_new_token(token: String):
-    print(f"New token: {token.value}")
+def on_new_token(token: jv.String):
+    print(f"New token: {token.get_value()}")
 
 
 def on_message_complete(full_message: str):
@@ -88,8 +86,8 @@ response.tokens.on_append(on_new_token)
 response.message.on_complete(on_message_complete)
 
 # Simulate streaming data
-with Parser(response) as parser:
-    parser.push('{"message": "The quick")')
+with jv.Parser(response) as parser:
+    parser.push('{"message": "The quick')
     parser.push(' brown fox", "tokens": ["The", "quick"]}')
 ```
 
@@ -98,15 +96,14 @@ with Parser(response) as parser:
 The `Atomic` class handles primitive types that arrive as complete values rather than streaming text:
 
 ```python
-from jsonversation.parser import Parser
-from jsonversation.models import Object, String, Atomic
+import jsonversation as jv
 
 
-class APIResponse(Object):
-    message: String
-    status_code: Atomic[int]
-    success: Atomic[bool]
-    response_time: Atomic[float]
+class APIResponse(jv.Object):
+    message: jv.String
+    status_code: jv.Atomic[int]
+    success: jv.Atomic[bool]
+    response_time: jv.Atomic[float]
 
 
 response = APIResponse()
@@ -129,41 +126,40 @@ response.status_code.on_complete(on_status_change)
 response.success.on_complete(on_completion)
 
 # Process JSON with atomic values
-with Parser(response) as parser:
+with jv.Parser(response) as parser:
     parser.push('{"message": "Request completed", "status_code": 200')
     parser.push(', "success": true, "response_time": 1.23}')
     # Callbacks will be triggered when atomic values are completed
 
-print(response.status_code.value)  # 200
-print(response.success.value)  # True
-print(response.response_time.value)  # 1.23
+print(response.status_code.get_value())  # 200
+print(response.success.get_value())  # True
+print(response.response_time.get_value())  # 1.23
 ```
 
 
 ### Complex Nested Structures
 
 ```python
-from jsonversation.parser import Parser
-from jsonversation.models import Object, String, List
+import jsonversation as jv
 
 
-class Author(Object):
-    name: String
-    email: String
+class Author(jv.Object):
+    name: jv.String
+    email: jv.String
 
 
-class Comment(Object):
-    id: String
-    text: String
+class Comment(jv.Object):
+    id: jv.String
+    text: jv.String
     author: Author
 
 
-class BlogPost(Object):
-    title: String
-    content: String
+class BlogPost(jv.Object):
+    title: jv.String
+    content: jv.String
     author: Author
-    comments: List[Comment]
-    tags: List[String]
+    comments: jv.List[Comment]
+    tags: jv.List[jv.String]
 
 
 # Create and use the parser
@@ -192,13 +188,13 @@ complex_json = """
 }
 """
 
-with Parser(post) as parser:
+with jv.Parser(post) as parser:
     parser.push(complex_json)
     # Access nested data
-    print(post.title.value)  # "Streaming JSON in Python"
-    print(post.author.name.value)  # "Jane Doe"
-    print(post.comments.value[0].text.value)  # "Great article!"
-    print([tag.value for tag in post.tags.value])  # ["python", "json", "streaming"]
+    print(post.title.get_value())  # "Streaming JSON in Python"
+    print(post.author.name.get_value())  # "Jane Doe"
+    print(post.comments.get_value()[0].text.get_value())  # "Great article!"
+    print([tag.get_value for tag in post.tags.get_value()])  # ["python", "json", "streaming"]
 ```
 
 ## API Reference
