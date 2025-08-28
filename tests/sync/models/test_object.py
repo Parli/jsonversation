@@ -1,78 +1,78 @@
 from typing import Any
-from jsonversation.models import Object, String, List
+import jsonversation as jv
 
 
 # Test classes for Object functionality
-class SimpleObject(Object):
-    name: String
-    value: String
+class SimpleObject(jv.Object):
+    name: jv.String
+    value: jv.String
 
 
-class ComplexObject(Object):
-    title: String
-    items: List[String]
-    metadata: String
+class ComplexObject(jv.Object):
+    title: jv.String
+    items: jv.List[jv.String]
+    metadata: jv.String
 
 
-class NestedObject(Object):
-    id: String
+class NestedObject(jv.Object):
+    id: jv.String
     details: SimpleObject
-    description: String
+    description: jv.String
 
 
-class ObjectWithObjectList(Object):
-    title: String
-    objects: List[SimpleObject]
-    count: String
+class ObjectWithObjectList(jv.Object):
+    title: jv.String
+    objects: jv.List[SimpleObject]
+    count: jv.String
 
 
-class DeepNestedObject(Object):
-    root_name: String
+class DeepNestedObject(jv.Object):
+    root_name: jv.String
     nested_data: NestedObject
-    tags: List[String]
+    tags: jv.List[jv.String]
 
 
-class ComplexNestedObject(Object):
-    header: String
-    nested_objects: List[NestedObject]
-    simple_list: List[String]
-    footer: String
+class ComplexNestedObject(jv.Object):
+    header: jv.String
+    nested_objects: jv.List[NestedObject]
+    simple_list: jv.List[jv.String]
+    footer: jv.String
 
 
-class ObjectWithStringList(Object):
-    title: String
-    items: List[String]
-    count: String
+class ObjectWithStringList(jv.Object):
+    title: jv.String
+    items: jv.List[jv.String]
+    count: jv.String
 
 
-class EmptyObject(Object):
+class EmptyObject(jv.Object):
     pass
 
 
 def test_object_init_simple() -> None:
-    """Test Object initialization with simple String attributes."""
+    """Test Object initialization with simple jv.String attributes."""
     obj = SimpleObject()
 
     assert hasattr(obj, "name")
     assert hasattr(obj, "value")
-    assert isinstance(obj.name, String)
-    assert isinstance(obj.value, String)
+    assert isinstance(obj.name, jv.String)
+    assert isinstance(obj.value, jv.String)
     assert obj.name._value.getvalue() == ""
     assert obj.value._value.getvalue() == ""
     assert obj._keys == ["name", "value"]
 
 
 def test_object_init_complex() -> None:
-    """Test Object initialization with complex attributes including List."""
+    """Test Object initialization with complex attributes includingjv.List."""
     obj = ComplexObject()
 
     assert hasattr(obj, "title")
     assert hasattr(obj, "items")
     assert hasattr(obj, "metadata")
-    assert isinstance(obj.title, String)
-    assert isinstance(obj.items, List)
-    assert isinstance(obj.metadata, String)
-    assert obj.items._item_type == String
+    assert isinstance(obj.title, jv.String)
+    assert isinstance(obj.items, jv.List)
+    assert isinstance(obj.metadata, jv.String)
+    assert obj.items._item_type == jv.String
     assert obj._keys == ["title", "items", "metadata"]
 
 
@@ -83,42 +83,42 @@ def test_object_init_nested() -> None:
     assert hasattr(obj, "id")
     assert hasattr(obj, "details")
     assert hasattr(obj, "description")
-    assert isinstance(obj.id, String)
+    assert isinstance(obj.id, jv.String)
     assert isinstance(obj.details, SimpleObject)
-    assert isinstance(obj.description, String)
+    assert isinstance(obj.description, jv.String)
     assert obj._keys == ["id", "details", "description"]
 
     # Check nested object is properly initialized
-    assert isinstance(obj.details.name, String)
-    assert isinstance(obj.details.value, String)
+    assert isinstance(obj.details.name, jv.String)
+    assert isinstance(obj.details.value, jv.String)
     assert obj.details.name._value.getvalue() == ""
     assert obj.details.value._value.getvalue() == ""
 
 
 def test_object_init_with_object_list() -> None:
-    """Test Object initialization with List of Objects."""
+    """Test Object initialization withjv.List of Objects."""
     obj = ObjectWithObjectList()
 
     assert hasattr(obj, "title")
     assert hasattr(obj, "objects")
     assert hasattr(obj, "count")
-    assert isinstance(obj.title, String)
-    assert isinstance(obj.objects, List)
-    assert isinstance(obj.count, String)
+    assert isinstance(obj.title, jv.String)
+    assert isinstance(obj.objects, jv.List)
+    assert isinstance(obj.count, jv.String)
     assert obj.objects._item_type == SimpleObject
     assert obj._keys == ["title", "objects", "count"]
 
 
 def test_object_init_complex_nested() -> None:
-    """Test Object initialization with complex nested structure including List of Objects."""
+    """Test Object initialization with complex nested structure includingjv.List of Objects."""
     obj = ComplexNestedObject()
 
-    assert isinstance(obj.header, String)
-    assert isinstance(obj.nested_objects, List)
-    assert isinstance(obj.simple_list, List)
-    assert isinstance(obj.footer, String)
+    assert isinstance(obj.header, jv.String)
+    assert isinstance(obj.nested_objects, jv.List)
+    assert isinstance(obj.simple_list, jv.List)
+    assert isinstance(obj.footer, jv.String)
     assert obj.nested_objects._item_type == NestedObject
-    assert obj.simple_list._item_type == String
+    assert obj.simple_list._item_type == jv.String
     assert obj._keys == ["header", "nested_objects", "simple_list", "footer"]
 
 
@@ -126,19 +126,19 @@ def test_object_init_deep_nested() -> None:
     """Test Object initialization with deeply nested Object attributes."""
     obj = DeepNestedObject()
 
-    assert isinstance(obj.root_name, String)
+    assert isinstance(obj.root_name, jv.String)
     assert isinstance(obj.nested_data, NestedObject)
-    assert isinstance(obj.tags, List)
+    assert isinstance(obj.tags, jv.List)
     assert obj._keys == ["root_name", "nested_data", "tags"]
 
     # Check nested object structure
-    assert isinstance(obj.nested_data.id, String)
+    assert isinstance(obj.nested_data.id, jv.String)
     assert isinstance(obj.nested_data.details, SimpleObject)
-    assert isinstance(obj.nested_data.description, String)
+    assert isinstance(obj.nested_data.description, jv.String)
 
     # Check deeply nested object structure
-    assert isinstance(obj.nested_data.details.name, String)
-    assert isinstance(obj.nested_data.details.value, String)
+    assert isinstance(obj.nested_data.details.name, jv.String)
+    assert isinstance(obj.nested_data.details.value, jv.String)
 
 
 def test_object_init_empty() -> None:
@@ -159,12 +159,12 @@ def test_object_update_simple_attributes() -> None:
 
 
 def test_object_update_with_object_list() -> None:
-    """Test updating Object with List of Objects."""
+    """Test updating Object withjv.List of Objects."""
     obj = ObjectWithObjectList()
 
     obj.update(
         {
-            "title": "Object List Test",
+            "title": "Objectjv.List Test",
             "objects": [
                 {"name": "obj1", "value": "val1"},
                 {"name": "obj2", "value": "val2"},
@@ -173,7 +173,7 @@ def test_object_update_with_object_list() -> None:
         }
     )
 
-    assert obj.title._value.getvalue() == "Object List Test"
+    assert obj.title._value.getvalue() == "Objectjv.List Test"
     assert obj.count._value.getvalue() == "2"
     assert len(obj.objects._values) == 2
 
@@ -189,7 +189,7 @@ def test_object_update_with_object_list() -> None:
 
 
 def test_object_update_object_list_incremental() -> None:
-    """Test incremental updates to List of Objects."""
+    """Test incremental updates tojv.List of Objects."""
     obj = ObjectWithObjectList()
 
     # First update
@@ -218,7 +218,7 @@ def test_object_update_object_list_incremental() -> None:
 
 
 def test_object_update_object_list_partial() -> None:
-    """Test partial updates to objects within List of Objects."""
+    """Test partial updates to objects withinjv.List of Objects."""
     obj = ObjectWithObjectList()
 
     # Initial update
@@ -450,7 +450,7 @@ def test_object_complete_with_lists() -> None:
 
     completed_items = []
 
-    def list_on_complete(values: list[String]) -> None:
+    def list_on_complete(values: list[jv.String]) -> None:
         completed_items.extend(values)
 
     obj.items.on_complete(list_on_complete)
@@ -580,7 +580,7 @@ def test_object_complete_with_list() -> None:
     def callback(value: dict[str, Any]) -> None:
         completed_values.append(value)
 
-    def list_callback(values: list[String]) -> None:
+    def list_callback(values: list[jv.String]) -> None:
         list_completed.extend([v.get_value() for v in values])
 
     obj.on_complete(callback)
@@ -659,7 +659,7 @@ def test_object_complete_with_object_list() -> None:
     obj.objects.on_complete(list_callback)
     obj.update(
         {
-            "title": "Object List",
+            "title": "Objectjv.List",
             "objects": [{"name": "obj1", "value": "val1"}, {"name": "obj2", "value": "val2"}],
             "count": "2",
         }
@@ -667,7 +667,7 @@ def test_object_complete_with_object_list() -> None:
     obj._complete()
 
     assert len(completed_values) == 1
-    assert completed_values[0]["title"] == "Object List"
+    assert completed_values[0]["title"] == "Objectjv.List"
     assert completed_values[0]["count"] == "2"
     assert list_completed == [2]
 
