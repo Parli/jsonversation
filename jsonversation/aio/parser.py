@@ -3,7 +3,7 @@ from typing import Any
 import jiter
 import io
 
-from jsonversation.models import Object
+from jsonversation.aio.models import Object
 
 
 class Parser:
@@ -14,17 +14,17 @@ class Parser:
         self._object = obj
         self._buffer = io.BytesIO()
 
-    def __enter__(self) -> Parser:
+    async def __aenter__(self) -> Parser:
         return self
 
-    def __exit__(self, exc_type: type[BaseException] | None, *args: list[Any]) -> None:
+    async def __aexit__(self, exc_type: type[BaseException] | None, *args: list[Any]) -> None:
         if exc_type is None:
-            self._object._complete()
+            await self._object._complete()
 
-    def push(self, chunk: str) -> None:
+    async def push(self, chunk: str) -> None:
         if not chunk.strip():
             return None
 
         self._buffer.write(chunk.encode())
         parsed_dict = jiter.from_json(self._buffer.getvalue(), partial_mode="trailing-strings")
-        self._object.update(parsed_dict)
+        await self._object.update(parsed_dict)

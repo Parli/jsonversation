@@ -1,43 +1,43 @@
-from jsonversation.models import List, String
+import jsonversation as jv
 
 
 def test_list_init() -> None:
-    list_obj = List(String)
+    list_obj = jv.List(jv.String)
 
     assert list_obj._values == []
-    assert list_obj._item_type == String
+    assert list_obj._item_type == jv.String
     assert list_obj._on_append_funcs == []
 
 
 def test_list_update_empty_list() -> None:
-    list_obj = List(String)
+    list_obj = jv.List(jv.String)
     list_obj.update([])
 
     assert list_obj._values == []
 
 
 def test_list_update_single_item() -> None:
-    list_obj = List(String)
+    list_obj = jv.List(jv.String)
     list_obj.update(["hello"])
 
     assert len(list_obj._values) == 1
-    assert isinstance(list_obj._values[0], String)
+    assert isinstance(list_obj._values[0], jv.String)
     assert list_obj._values[0]._value.getvalue() == "hello"
 
 
 def test_list_update_multiple_items() -> None:
-    list_obj = List(String)
+    list_obj = jv.List(jv.String)
     list_obj.update(["hello", "world", "test"])
 
     assert len(list_obj._values) == 3
-    assert all(isinstance(item, String) for item in list_obj._values)
+    assert all(isinstance(item, jv.String) for item in list_obj._values)
     assert list_obj._values[0]._value.getvalue() == "hello"
     assert list_obj._values[1]._value.getvalue() == "world"
     assert list_obj._values[2]._value.getvalue() == "test"
 
 
 def test_list_update_incremental_growth() -> None:
-    list_obj = List(String)
+    list_obj = jv.List(jv.String)
 
     list_obj.update(["hello"])
     assert len(list_obj._values) == 1
@@ -56,7 +56,7 @@ def test_list_update_incremental_growth() -> None:
 
 
 def test_list_update_existing_items() -> None:
-    list_obj = List(String)
+    list_obj = jv.List(jv.String)
 
     # Initial update
     list_obj.update(["hello", "world"])
@@ -73,8 +73,8 @@ def test_list_update_existing_items() -> None:
 
 
 def test_list_update_mixed_new_and_existing() -> None:
-    """Test updating List with mix of existing and new items."""
-    list_obj = List(String)
+    """Test updating jv.List with mix of existing and new items."""
+    list_obj = jv.List(jv.String)
 
     # Initial update
     list_obj.update(["hello"])
@@ -90,30 +90,30 @@ def test_list_update_mixed_new_and_existing() -> None:
 
 def test_list_on_append_single_callback() -> None:
     """Test registering and triggering a single callback for new items."""
-    list_obj = List(String)
+    list_obj = jv.List(jv.String)
     appended_items = []
 
-    def callback(item: String) -> None:
+    def callback(item: jv.String) -> None:
         appended_items.append(item)
 
     list_obj.on_append(callback)
     list_obj.update(["hello"])
 
     assert len(appended_items) == 1
-    assert isinstance(appended_items[0], String)
+    assert isinstance(appended_items[0], jv.String)
     assert appended_items[0]._value.getvalue() == "hello"
 
 
 def test_list_on_append_multiple_callbacks() -> None:
     """Test multiple callbacks are all triggered for new items."""
-    list_obj = List(String)
+    list_obj = jv.List(jv.String)
     appended_items_1 = []
     appended_items_2 = []
 
-    def callback1(item: String) -> None:
+    def callback1(item: jv.String) -> None:
         appended_items_1.append(item)
 
-    def callback2(item: String) -> None:
+    def callback2(item: jv.String) -> None:
         appended_items_2.append(item)
 
     list_obj.on_append(callback1)
@@ -127,10 +127,10 @@ def test_list_on_append_multiple_callbacks() -> None:
 
 def test_list_on_append_only_new_items() -> None:
     """Test callbacks are only triggered for newly added items, not existing ones."""
-    list_obj = List(String)
+    list_obj = jv.List(jv.String)
     appended_items = []
 
-    def callback(item: String) -> None:
+    def callback(item: jv.String) -> None:
         appended_items.append(item)
 
     list_obj.on_append(callback)
@@ -150,10 +150,10 @@ def test_list_on_append_only_new_items() -> None:
 
 def test_list_on_append_multiple_new_items() -> None:
     """Test callbacks triggered for multiple new items in single update."""
-    list_obj = List(String)
+    list_obj = jv.List(jv.String)
     appended_items = []
 
-    def callback(item: String) -> None:
+    def callback(item: jv.String) -> None:
         appended_items.append(item)
 
     list_obj.on_append(callback)
@@ -167,13 +167,13 @@ def test_list_on_append_multiple_new_items() -> None:
 
 def test_list_on_append_callback_order() -> None:
     """Test callbacks are called in registration order for each new item."""
-    list_obj = List(String)
+    list_obj = jv.List(jv.String)
     call_order = []
 
-    def callback1(item: String) -> None:
+    def callback1(item: jv.String) -> None:
         call_order.append(f"callback1-{item._value.getvalue()}")
 
-    def callback2(item: String) -> None:
+    def callback2(item: jv.String) -> None:
         call_order.append(f"callback2-{item._value.getvalue()}")
 
     list_obj.on_append(callback1)
@@ -191,10 +191,10 @@ def test_list_on_append_callback_order() -> None:
 
 def test_list_streaming_behavior() -> None:
     """Test complex streaming scenario with incremental updates."""
-    list_obj = List(String)
+    list_obj = jv.List(jv.String)
     appended_items = []
 
-    def callback(item: String) -> None:
+    def callback(item: jv.String) -> None:
         appended_items.append(item._value.getvalue())
 
     list_obj.on_append(callback)
@@ -217,8 +217,8 @@ def test_list_streaming_behavior() -> None:
 
 
 def test_list_empty_string_items() -> None:
-    """Test List with empty string items."""
-    list_obj = List(String)
+    """Test jv.List with empty string items."""
+    list_obj = jv.List(jv.String)
     list_obj.update(["", "hello", ""])
 
     assert len(list_obj._values) == 3
@@ -229,10 +229,10 @@ def test_list_empty_string_items() -> None:
 
 def test_list_on_complete_single_callback() -> None:
     """Test registering and triggering a single completion callback."""
-    list_obj = List(String)
+    list_obj = jv.List(jv.String)
     completed_values = []
 
-    def callback(values: list[String]) -> None:
+    def callback(values: list[jv.String]) -> None:
         completed_values.append([v._value.getvalue() for v in values])
 
     list_obj.on_complete(callback)
@@ -245,14 +245,14 @@ def test_list_on_complete_single_callback() -> None:
 
 def test_list_on_complete_multiple_callbacks() -> None:
     """Test multiple callbacks are all triggered on completion."""
-    list_obj = List(String)
+    list_obj = jv.List(jv.String)
     completed_values_1 = []
     completed_values_2 = []
 
-    def callback1(values: list[String]) -> None:
+    def callback1(values: list[jv.String]) -> None:
         completed_values_1.append(len(values))
 
-    def callback2(values: list[String]) -> None:
+    def callback2(values: list[jv.String]) -> None:
         completed_values_2.append([v._value.getvalue() for v in values])
 
     list_obj.on_complete(callback1)
@@ -266,16 +266,16 @@ def test_list_on_complete_multiple_callbacks() -> None:
 
 def test_list_on_complete_callback_order() -> None:
     """Test callbacks are called in registration order."""
-    list_obj = List(String)
+    list_obj = jv.List(jv.String)
     call_order = []
 
-    def callback1(values: list[String]) -> None:
+    def callback1(values: list[jv.String]) -> None:
         call_order.append("callback1")
 
-    def callback2(values: list[String]) -> None:
+    def callback2(values: list[jv.String]) -> None:
         call_order.append("callback2")
 
-    def callback3(values: list[String]) -> None:
+    def callback3(values: list[jv.String]) -> None:
         call_order.append("callback3")
 
     list_obj.on_complete(callback1)
@@ -289,10 +289,10 @@ def test_list_on_complete_callback_order() -> None:
 
 def test_list_complete_empty_list() -> None:
     """Test complete method with empty list."""
-    list_obj = List(String)
+    list_obj = jv.List(jv.String)
     completed_values = []
 
-    def callback(values: list[String]) -> None:
+    def callback(values: list[jv.String]) -> None:
         completed_values.append(len(values))
 
     list_obj.on_complete(callback)
@@ -303,10 +303,10 @@ def test_list_complete_empty_list() -> None:
 
 def test_list_complete_multiple_calls() -> None:
     """Test complete method can be called multiple times."""
-    list_obj = List(String)
+    list_obj = jv.List(jv.String)
     completed_values = []
 
-    def callback(values: list[String]) -> None:
+    def callback(values: list[jv.String]) -> None:
         completed_values.append([v._value.getvalue() for v in values])
 
     list_obj.on_complete(callback)
@@ -321,7 +321,7 @@ def test_list_complete_multiple_calls() -> None:
 
 def test_list_complete_no_callbacks() -> None:
     """Test complete method works when no callbacks are registered."""
-    list_obj = List(String)
+    list_obj = jv.List(jv.String)
     list_obj.update(["test"])
     # Should not raise an exception
     list_obj._complete()

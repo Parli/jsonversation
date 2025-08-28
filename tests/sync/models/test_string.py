@@ -1,21 +1,21 @@
-from jsonversation.models import String
+import jsonversation as jv
 
 
 def test_string_init() -> None:
-    string_obj = String()
+    string_obj = jv.String()
     assert string_obj._value.getvalue() == ""
     assert string_obj._on_append_funcs == []
 
 
 def test_string_update_empty_buffer() -> None:
-    string_obj = String()
+    string_obj = jv.String()
     string_obj.update("hello")
 
     assert string_obj._value.getvalue() == "hello"
 
 
 def test_string_update_same_value() -> None:
-    string_obj = String()
+    string_obj = jv.String()
     string_obj.update("hello")
 
     string_obj.update("hello")
@@ -24,7 +24,7 @@ def test_string_update_same_value() -> None:
 
 
 def test_string_update_incremental() -> None:
-    string_obj = String()
+    string_obj = jv.String()
     string_obj.update("hello")
     string_obj.update("hello world")
 
@@ -32,7 +32,7 @@ def test_string_update_incremental() -> None:
 
 
 def test_string_update_multiple_increments() -> None:
-    string_obj = String()
+    string_obj = jv.String()
     string_obj.update("a")
     string_obj.update("ab")
     string_obj.update("abc")
@@ -42,14 +42,14 @@ def test_string_update_multiple_increments() -> None:
 
 
 def test_string_update_empty_string() -> None:
-    string_obj = String()
+    string_obj = jv.String()
     string_obj.update("")
 
     assert string_obj._value.getvalue() == ""
 
 
 def test_string_update_shorter_value() -> None:
-    string_obj = String()
+    string_obj = jv.String()
     string_obj.update("hello world")
     string_obj.update("hello")  # Shorter than current
 
@@ -57,7 +57,7 @@ def test_string_update_shorter_value() -> None:
 
 
 def test_on_append_single_callback() -> None:
-    string_obj = String()
+    string_obj = jv.String()
     called_chunks = []
 
     def callback(chunk: str) -> None:
@@ -71,7 +71,7 @@ def test_on_append_single_callback() -> None:
 
 
 def test_on_append_multiple_callbacks() -> None:
-    string_obj = String()
+    string_obj = jv.String()
     called_chunks_1 = []
     called_chunks_2 = []
 
@@ -90,7 +90,7 @@ def test_on_append_multiple_callbacks() -> None:
 
 
 def test_on_append_incremental_updates() -> None:
-    string_obj = String()
+    string_obj = jv.String()
     called_chunks = []
 
     def callback(chunk: str) -> None:
@@ -106,7 +106,7 @@ def test_on_append_incremental_updates() -> None:
 
 
 def test_on_append_no_callback_on_same_value() -> None:
-    string_obj = String()
+    string_obj = jv.String()
     called_chunks = []
 
     def callback(chunk: str) -> None:
@@ -120,7 +120,7 @@ def test_on_append_no_callback_on_same_value() -> None:
 
 
 def test_on_append_no_callback_on_shorter_value() -> None:
-    string_obj = String()
+    string_obj = jv.String()
     called_chunks = []
 
     def callback(chunk: str) -> None:
@@ -135,7 +135,7 @@ def test_on_append_no_callback_on_shorter_value() -> None:
 
 def test_on_append_callback_order() -> None:
     """Test callbacks are called in the order they were registered."""
-    string_obj = String()
+    string_obj = jv.String()
     call_order = []
 
     def callback1(chunk: str) -> None:
@@ -157,7 +157,7 @@ def test_on_append_callback_order() -> None:
 
 def test_complex_streaming_scenario() -> None:
     """Test a complex streaming scenario with multiple updates and callbacks."""
-    string_obj = String()
+    string_obj = jv.String()
     received_chunks = []
     full_content = []
 
@@ -187,7 +187,7 @@ def test_complex_streaming_scenario() -> None:
 
 
 def test_string_on_complete_single_callback() -> None:
-    string_obj = String()
+    string_obj = jv.String()
     completed_values = []
 
     def callback(value: str) -> None:
@@ -201,7 +201,7 @@ def test_string_on_complete_single_callback() -> None:
 
 
 def test_string_on_complete_multiple_callbacks() -> None:
-    string_obj = String()
+    string_obj = jv.String()
     completed_values_1 = []
     completed_values_2 = []
 
@@ -222,7 +222,7 @@ def test_string_on_complete_multiple_callbacks() -> None:
 
 def test_string_on_complete_callback_order() -> None:
     """Test callbacks are called in the order they were registered."""
-    string_obj = String()
+    string_obj = jv.String()
     call_order = []
 
     def callback1(value: str) -> None:
@@ -245,7 +245,7 @@ def test_string_on_complete_callback_order() -> None:
 
 def test_string_complete_empty_value() -> None:
     """Test complete method with empty string value."""
-    string_obj = String()
+    string_obj = jv.String()
     completed_values = []
 
     def callback(value: str) -> None:
@@ -259,7 +259,7 @@ def test_string_complete_empty_value() -> None:
 
 def test_string_complete_multiple_calls() -> None:
     """Test complete method can be called multiple times."""
-    string_obj = String()
+    string_obj = jv.String()
     completed_values = []
 
     def callback(value: str) -> None:
@@ -275,7 +275,7 @@ def test_string_complete_multiple_calls() -> None:
 
 def test_string_complete_no_callbacks() -> None:
     """Test complete method works when no callbacks are registered."""
-    string_obj = String()
+    string_obj = jv.String()
     string_obj.update("test")
     # Should not raise an exception
     string_obj._complete()
