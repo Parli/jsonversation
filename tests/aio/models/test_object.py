@@ -426,7 +426,11 @@ async def test_object_complete_simple() -> None:
     """Test Object complete method functionality."""
     obj = SimpleObject()
     completed_values = []
-    obj.name.on_complete(lambda v: completed_values.append(v))
+
+    async def handle_on_complete(val: str) -> None:
+        completed_values.append(val)
+
+    obj.name.on_complete(handle_on_complete)
     await obj.update({"name": "test_name", "value": "test_value"})
 
     assert completed_values == ["test_name"]
@@ -437,7 +441,11 @@ async def test_object_complete_incomplete_string() -> None:
     obj = SimpleObject()
 
     completed_values = []
-    obj.name.on_complete(lambda v: completed_values.append(v))
+
+    async def handle_on_complete(val: str) -> None:
+        completed_values.append(val)
+
+    obj.name.on_complete(handle_on_complete)
 
     await obj.update({"name": "test_name"})
 

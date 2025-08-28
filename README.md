@@ -197,6 +197,55 @@ with jv.Parser(post) as parser:
     print([tag.get_value for tag in post.tags.get_value()])  # ["python", "json", "streaming"]
 ```
 
+## AsyncIO
+
+Jsonversation supports async callbacks as well. The API is very similar between the sync/async classes, with the only difference being that the async module supports async callback functions.
+
+### Example
+
+```python
+import asyncio
+import jsonversation.aio as jv
+
+
+class StreamingResponse(jv.Object):
+    message: jv.String
+    tokens: jv.List[jv.String]
+
+
+response = StreamingResponse()
+
+
+# Set up real-time callbacks
+async def on_message_update(chunk: str):
+    await asyncio.sleep(0.001)
+    print(f"New text: {chunk}")
+
+
+async def on_new_token(token: jv.String):
+    await asyncio.sleep(0.001)
+    print(f"New token: {token.get_value()}")
+
+
+async def on_message_complete(full_message: str):
+    await asyncio.sleep(0.001)
+    print(f"Complete message: {full_message}")
+
+
+response.message.on_append(on_message_update)
+response.tokens.on_append(on_new_token)
+response.message.on_complete(on_message_complete)
+
+
+async def run():
+    async with jv.Parser(response) as parser:
+        await parser.push('{"message": "The quick')
+        await parser.push(' brown fox", "tokens": ["The", "quick"]}')
+
+
+asyncio.run(run())
+```
+
 ## API Reference
 
 ### Core Classes
