@@ -362,7 +362,7 @@ async def test_parser_context_manager_basic() -> None:
     """Test basic context manager functionality."""
     obj = create_simple_object()
 
-    with jv.Parser(obj) as parser:
+    async with jv.Parser(obj) as parser:
         assert parser._object is obj
         assert isinstance(parser._buffer, io.BytesIO)
         await parser.push('{"name": "context_test"}')
@@ -376,7 +376,7 @@ async def test_parser_context_manager_returns_self() -> None:
     obj = create_simple_object()
     parser = jv.Parser(obj)
 
-    with parser as context_parser:
+    async with parser as context_parser:
         assert context_parser is parser
         assert context_parser._object is obj
 
@@ -386,12 +386,12 @@ async def test_parser_context_manager_completion_on_exit() -> None:
     obj = create_simple_object()
     completed_values: list[str] = []
 
-    def callback(value: str) -> None:
+    async def callback(value: str) -> None:
         completed_values.append(value)
 
     obj.name.on_complete(callback)  # type: ignore
 
-    with jv.Parser(obj) as parser:
+    async with jv.Parser(obj) as parser:
         await parser.push('{"name": "completion_test"}')
         # Completion callback should not be triggered yet
         assert completed_values == []
@@ -408,16 +408,16 @@ async def test_parser_context_manager_complex_object_completion() -> None:
     tags_completed: list[list[str]] = []
     object_completed: list[dict[str, Any]] = []
 
-    def name_callback(value: str) -> None:
+    async def name_callback(value: str) -> None:
         name_completed.append(value)
 
-    def description_callback(value: str) -> None:
+    async def description_callback(value: str) -> None:
         description_completed.append(value)
 
-    def tags_callback(values: list[jv.String]) -> None:
+    async def tags_callback(values: list[jv.String]) -> None:
         tags_completed.append([v.get_value() for v in values])
 
-    def object_callback(value: dict[str, Any]) -> None:
+    async def object_callback(value: dict[str, Any]) -> None:
         object_completed.append(value)
 
     obj.name.on_complete(name_callback)  # type: ignore
@@ -425,7 +425,7 @@ async def test_parser_context_manager_complex_object_completion() -> None:
     obj.tags.on_complete(tags_callback)  # type: ignore
     obj.on_complete(object_callback)
 
-    with jv.Parser(obj) as parser:
+    async with jv.Parser(obj) as parser:
         await parser.push('{"name": "Test", "description": "Description", "tags": ["tag1", "tag2"]}')
         assert name_completed == ["Test"]
         assert description_completed == ["Description"]
@@ -441,16 +441,16 @@ async def test_parser_context_manager_streaming_updates() -> None:
     name_updates: list[str] = []
     name_completed: list[str] = []
 
-    def name_update_callback(chunk: str) -> None:
+    async def name_update_callback(chunk: str) -> None:
         name_updates.append(chunk)
 
-    def name_complete_callback(value: str) -> None:
+    async def name_complete_callback(value: str) -> None:
         name_completed.append(value)
 
     obj.name.on_append(name_update_callback)  # type: ignore
     obj.name.on_complete(name_complete_callback)  # type: ignore
 
-    with jv.Parser(obj) as parser:
+    async with jv.Parser(obj) as parser:
         await parser.push('{"name": "Stream')
         await parser.push('ing Test"}')
         # Updates should be triggered during streaming
@@ -467,14 +467,14 @@ async def test_parser_context_manager_multiple_contexts() -> None:
     obj = create_simple_object()
     completed_values: list[str] = []
 
-    def callback(value: str) -> None:
+    async def callback(value: str) -> None:
         completed_values.append(value)
 
     obj.name.on_complete(callback)  # type: ignore
     parser = jv.Parser(obj)
 
     # First context
-    with parser:
+    async with parser:
         await parser.push('{"name": "first"}')
 
     assert completed_values == ["first"]
@@ -483,13 +483,13 @@ async def test_parser_context_manager_multiple_contexts() -> None:
     obj2 = create_simple_object()
     completed_values_2: list[str] = []
 
-    def callback2(value: str) -> None:
+    async def callback2(value: str) -> None:
         completed_values_2.append(value)
 
     obj2.name.on_complete(callback2)  # type: ignore
     parser2 = jv.Parser(obj2)
 
-    with parser2:
+    async with parser2:
         await parser2.push('{"name": "second"}')
 
     assert completed_values_2 == ["second"]
@@ -501,12 +501,12 @@ async def test_parser_context_manager_partial_json() -> None:
     obj = create_simple_object()
     completed_values: list[str] = []
 
-    def callback(value: str) -> None:
+    async def callback(value: str) -> None:
         completed_values.append(value)
 
     obj.name.on_complete(callback)  # type: ignore
 
-    with jv.Parser(obj) as parser:
+    async with jv.Parser(obj) as parser:
         # Push partial JSON that might not parse completely
         await parser.push('{"name": "partial')
         # The completion should still work when context exits
@@ -525,7 +525,7 @@ async def test_parser_context_manager_empty_push() -> None:
 
     obj.name.on_complete(callback)  # type: ignore
 
-    with jv.Parser(obj) as _:
+    async with jv.Parser(obj) as _:
         # No push operations
         pass
 
@@ -537,7 +537,7 @@ async def test_parser_context_manager_buffer_state() -> None:
     """Test that buffer state is preserved during context manager usage."""
     obj = create_simple_object()
 
-    with jv.Parser(obj) as parser:
+    async with jv.Parser(obj) as parser:
         await parser.push('{"name":')
         buffer_mid_context = parser._buffer.getvalue()
         await parser.push(' "test"}')
@@ -556,16 +556,16 @@ async def test_parser_context_manager_with_list_object() -> None:
     items_completed: list[list[str]] = []
     object_completed: list[dict[str, Any]] = []
 
-    def items_callback(values: list[jv.String]) -> None:
+    async def items_callback(values: list[jv.String]) -> None:
         items_completed.append([v.get_value() for v in values])
 
-    def object_callback(value: dict[str, Any]) -> None:
+    async def object_callback(value: dict[str, Any]) -> None:
         object_completed.append(value)
 
     obj.items.on_complete(items_callback)  # type: ignore
     obj.on_complete(object_callback)
 
-    with jv.Parser(obj) as parser:
+    async with jv.Parser(obj) as parser:
         await parser.push('{"items": ["first", "second", "third"]}')
         # No completions during context
         assert items_completed == []
@@ -582,10 +582,10 @@ async def test_parser_context_manager_nested_context_safety() -> None:
 
     parser = jv.Parser(obj)
 
-    with parser as p1:
+    async with parser as p1:
         await p1.push('{"name": "outer"}')
         # Nested context with same parser (unusual but should be safe)
-        with parser as p2:
+        async with parser as p2:
             assert p1 is p2  # Same parser instance
             await p2.push('updated"}')  # This would append to buffer
 
@@ -598,16 +598,16 @@ async def test_parser_context_manager_completion_order() -> None:
     obj = create_complex_object()
     completion_order: list[str] = []
 
-    def name_callback(value: str) -> None:
+    async def name_callback(value: str) -> None:
         completion_order.append(f"name:{value}")
 
-    def description_callback(value: str) -> None:
+    async def description_callback(value: str) -> None:
         completion_order.append(f"description:{value}")
 
-    def tags_callback(values: list[jv.String]) -> None:
+    async def tags_callback(values: list[jv.String]) -> None:
         completion_order.append(f"tags:{len(values)}")
 
-    def object_callback(value: dict[str, Any]) -> None:
+    async def object_callback(value: dict[str, Any]) -> None:
         completion_order.append(f"object:{len(value)}")
 
     obj.name.on_complete(name_callback)  # type: ignore
@@ -615,7 +615,7 @@ async def test_parser_context_manager_completion_order() -> None:
     obj.tags.on_complete(tags_callback)  # type: ignore
     obj.on_complete(object_callback)
 
-    with jv.Parser(obj) as parser:
+    async with jv.Parser(obj) as parser:
         # Streaming updates that would trigger key transitions
         await parser.push('{"name": "Test"}')
         await parser.push('{"name": "Test", "description": "Desc"}')
