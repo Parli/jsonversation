@@ -319,7 +319,7 @@ async def test_buffer_direct_access() -> None:
     assert b'{"title": "test"}' in parser._buffer.getvalue()
 
 
-def test_multiple_parsers_independence() -> None:
+async def test_multiple_parsers_independence() -> None:
     """Test that multiple parsers maintain independent state."""
     obj1 = create_simple_object()
     obj2 = create_simple_object()
@@ -327,8 +327,8 @@ def test_multiple_parsers_independence() -> None:
     parser1 = jv.Parser(obj1)
     parser2 = jv.Parser(obj2)
 
-    parser1.push('{"name": "jv.Parser1"}')
-    parser2.push('{"name": "jv.Parser2"}')
+    await parser1.push('{"name": "jv.Parser1"}')
+    await parser2.push('{"name": "jv.Parser2"}')
 
     # jv.Objects should be updated independently
     assert obj1.name._value.getvalue() == "jv.Parser1"  # type: ignore
@@ -338,7 +338,7 @@ def test_multiple_parsers_independence() -> None:
     assert parser1._buffer.getvalue() != parser2._buffer.getvalue()
 
 
-def test_large_json_handling() -> None:
+async def test_large_json_handling() -> None:
     """Test handling of larger JSON strings."""
     obj = create_complex_object()
     parser = jv.Parser(obj)
@@ -358,7 +358,7 @@ def test_large_json_handling() -> None:
 
 
 # Context manager tests
-def test_parser_context_manager_basic() -> None:
+async def test_parser_context_manager_basic() -> None:
     """Test basic context manager functionality."""
     obj = create_simple_object()
 
@@ -371,7 +371,7 @@ def test_parser_context_manager_basic() -> None:
     assert obj.name._value.getvalue() == "context_test"  # type: ignore
 
 
-def test_parser_context_manager_returns_self() -> None:
+async def test_parser_context_manager_returns_self() -> None:
     """Test that context manager returns the parser instance."""
     obj = create_simple_object()
     parser = jv.Parser(obj)
@@ -381,7 +381,7 @@ def test_parser_context_manager_returns_self() -> None:
         assert context_parser._object is obj
 
 
-def test_parser_context_manager_completion_on_exit() -> None:
+async def test_parser_context_manager_completion_on_exit() -> None:
     """Test that object is completed when context manager exits."""
     obj = create_simple_object()
     completed_values: list[str] = []
@@ -400,7 +400,7 @@ def test_parser_context_manager_completion_on_exit() -> None:
     assert completed_values == ["completion_test"]
 
 
-def test_parser_context_manager_complex_object_completion() -> None:
+async def test_parser_context_manager_complex_object_completion() -> None:
     """Test context manager completion with complex object."""
     obj = create_complex_object()
     name_completed: list[str] = []
@@ -435,7 +435,7 @@ def test_parser_context_manager_complex_object_completion() -> None:
     assert len(object_completed) == 1
 
 
-def test_parser_context_manager_streaming_updates() -> None:
+async def test_parser_context_manager_streaming_updates() -> None:
     """Test context manager with streaming updates and completion."""
     obj = create_simple_object()
     name_updates: list[str] = []
@@ -462,7 +462,7 @@ def test_parser_context_manager_streaming_updates() -> None:
     assert name_completed == ["Streaming Test"]
 
 
-def test_parser_context_manager_multiple_contexts() -> None:
+async def test_parser_context_manager_multiple_contexts() -> None:
     """Test multiple context manager uses with same parser."""
     obj = create_simple_object()
     completed_values: list[str] = []
@@ -490,13 +490,13 @@ def test_parser_context_manager_multiple_contexts() -> None:
     parser2 = jv.Parser(obj2)
 
     with parser2:
-        parser2.push('{"name": "second"}')
+        await parser2.push('{"name": "second"}')
 
     assert completed_values_2 == ["second"]
     assert completed_values == ["first"]  # Original unchanged
 
 
-def test_parser_context_manager_partial_json() -> None:
+async def test_parser_context_manager_partial_json() -> None:
     """Test context manager behavior with partial JSON that gets completed."""
     obj = create_simple_object()
     completed_values: list[str] = []
@@ -515,7 +515,7 @@ def test_parser_context_manager_partial_json() -> None:
     # Completion should be triggered regardless
 
 
-def test_parser_context_manager_empty_push() -> None:
+async def test_parser_context_manager_empty_push() -> None:
     """Test context manager with no push operations."""
     obj = create_simple_object()
     completed_values: list[str] = []
@@ -533,7 +533,7 @@ def test_parser_context_manager_empty_push() -> None:
     assert completed_values == []
 
 
-def test_parser_context_manager_buffer_state() -> None:
+async def test_parser_context_manager_buffer_state() -> None:
     """Test that buffer state is preserved during context manager usage."""
     obj = create_simple_object()
 
@@ -550,7 +550,7 @@ def test_parser_context_manager_buffer_state() -> None:
     assert obj.name._value.getvalue() == "test"  # type: ignore
 
 
-def test_parser_context_manager_with_list_object() -> None:
+async def test_parser_context_manager_with_list_object() -> None:
     """Test context manager with object containing lists."""
     obj = create_object_with_list()
     items_completed: list[list[str]] = []
@@ -576,24 +576,24 @@ def test_parser_context_manager_with_list_object() -> None:
     assert len(object_completed) == 1
 
 
-def test_parser_context_manager_nested_context_safety() -> None:
+async def test_parser_context_manager_nested_context_safety() -> None:
     """Test that nested context managers work safely (if somehow used)."""
     obj = create_simple_object()
 
     parser = jv.Parser(obj)
 
     with parser as p1:
-        p1.push('{"name": "outer"}')
+        await p1.push('{"name": "outer"}')
         # Nested context with same parser (unusual but should be safe)
         with parser as p2:
             assert p1 is p2  # Same parser instance
-            p2.push('updated"}')  # This would append to buffer
+            await p2.push('updated"}')  # This would append to buffer
 
     # jv.Object should have the combined result
     assert "outer" in obj.name._value.getvalue()  # type: ignore
 
 
-def test_parser_context_manager_completion_order() -> None:
+async def test_parser_context_manager_completion_order() -> None:
     """Test that completions happen in correct order on context exit."""
     obj = create_complex_object()
     completion_order: list[str] = []
