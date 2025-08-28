@@ -1,7 +1,7 @@
 import jsonversation.aio as jv
 
 
-def test_list_init() -> None:
+async def test_list_init() -> None:
     list_obj = jv.List(jv.String)
 
     assert list_obj._values == []

@@ -520,7 +520,7 @@ async def test_parser_context_manager_empty_push() -> None:
     obj = create_simple_object()
     completed_values: list[str] = []
 
-    def callback(value: str) -> None:
+    async def callback(value: str) -> None:
         completed_values.append(value)
 
     obj.name.on_complete(callback)  # type: ignore
