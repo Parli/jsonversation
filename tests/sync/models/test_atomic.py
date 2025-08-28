@@ -1,12 +1,12 @@
 from typing import Any
-from jsonversation.models import Atomic
+import jsonversation as jv
 
 
 def test_atomic_init() -> None:
-    """Test Atomic initialization with different types."""
-    atomic_str = Atomic(str)
-    atomic_int = Atomic(int)
-    atomic_dict = Atomic(dict)
+    """Test jv.Atomic initialization with different types."""
+    atomic_str = jv.Atomic(str)
+    atomic_int = jv.Atomic(int)
+    atomic_dict = jv.Atomic(dict)
 
     assert atomic_str._is_empty is True
     assert atomic_str._value is None
@@ -22,8 +22,8 @@ def test_atomic_init() -> None:
 
 
 def test_atomic_update_string() -> None:
-    """Test updating Atomic with string value."""
-    atomic_obj = Atomic(str)
+    """Test updating jv.Atomic with string value."""
+    atomic_obj = jv.Atomic(str)
     atomic_obj.update("hello")
 
     assert atomic_obj._is_empty is False
@@ -32,8 +32,8 @@ def test_atomic_update_string() -> None:
 
 
 def test_atomic_update_integer() -> None:
-    """Test updating Atomic with integer value."""
-    atomic_obj = Atomic(int)
+    """Test updating jv.Atomic with integer value."""
+    atomic_obj = jv.Atomic(int)
     atomic_obj.update(42)
 
     assert atomic_obj._is_empty is False
@@ -42,8 +42,8 @@ def test_atomic_update_integer() -> None:
 
 
 def test_atomic_update_dict() -> None:
-    """Test updating Atomic with dictionary value."""
-    atomic_obj = Atomic(dict)
+    """Test updating jv.Atomic with dictionary value."""
+    atomic_obj = jv.Atomic(dict)
     test_dict = {"key": "value", "number": 123}
     atomic_obj.update(test_dict)
 
@@ -53,8 +53,8 @@ def test_atomic_update_dict() -> None:
 
 
 def test_atomic_update_list() -> None:
-    """Test updating Atomic with list value."""
-    atomic_obj = Atomic(list)
+    """Test updating jv.Atomic with list value."""
+    atomic_obj = jv.Atomic(list)
     test_list = ["item1", "item2", "item3"]
     atomic_obj.update(test_list)
 
@@ -64,8 +64,8 @@ def test_atomic_update_list() -> None:
 
 
 def test_atomic_update_none_value() -> None:
-    """Test updating Atomic with None value."""
-    atomic_obj = Atomic(type(None))
+    """Test updating jv.Atomic with None value."""
+    atomic_obj = jv.Atomic(type(None))
     atomic_obj.update(None)
 
     assert atomic_obj._is_empty is False
@@ -74,8 +74,8 @@ def test_atomic_update_none_value() -> None:
 
 
 def test_atomic_update_multiple_times() -> None:
-    """Test updating Atomic multiple times overwrites previous value."""
-    atomic_obj = Atomic(str)
+    """Test updating jv.Atomic multiple times overwrites previous value."""
+    atomic_obj = jv.Atomic(str)
 
     atomic_obj.update("first")
     assert atomic_obj.get_value() == "first"
@@ -90,8 +90,8 @@ def test_atomic_update_multiple_times() -> None:
 
 
 def test_atomic_update_empty_string() -> None:
-    """Test updating Atomic with empty string."""
-    atomic_obj = Atomic(str)
+    """Test updating jv.Atomic with empty string."""
+    atomic_obj = jv.Atomic(str)
     atomic_obj.update("")
 
     assert atomic_obj._is_empty is False
@@ -100,8 +100,8 @@ def test_atomic_update_empty_string() -> None:
 
 
 def test_atomic_update_zero() -> None:
-    """Test updating Atomic with zero value."""
-    atomic_obj = Atomic(int)
+    """Test updating jv.Atomic with zero value."""
+    atomic_obj = jv.Atomic(int)
     atomic_obj.update(0)
 
     assert atomic_obj._is_empty is False
@@ -110,8 +110,8 @@ def test_atomic_update_zero() -> None:
 
 
 def test_atomic_update_false() -> None:
-    """Test updating Atomic with False value."""
-    atomic_obj = Atomic(bool)
+    """Test updating jv.Atomic with False value."""
+    atomic_obj = jv.Atomic(bool)
     atomic_obj.update(False)
 
     assert atomic_obj._is_empty is False
@@ -121,7 +121,7 @@ def test_atomic_update_false() -> None:
 
 def test_atomic_value_property_before_update() -> None:
     """Test value property returns None when not updated."""
-    atomic_obj = Atomic(str)
+    atomic_obj = jv.Atomic(str)
 
     assert atomic_obj.get_value() is None
     assert atomic_obj._is_empty is True
@@ -129,7 +129,7 @@ def test_atomic_value_property_before_update() -> None:
 
 def test_atomic_on_complete_single_callback() -> None:
     """Test registering and triggering a single completion callback."""
-    atomic_obj = Atomic(str)
+    atomic_obj = jv.Atomic(str)
     completed_values = []
 
     def callback(value: str | None) -> None:
@@ -144,7 +144,7 @@ def test_atomic_on_complete_single_callback() -> None:
 
 def test_atomic_on_complete_multiple_callbacks() -> None:
     """Test multiple callbacks are all triggered on completion."""
-    atomic_obj = Atomic(int)
+    atomic_obj = jv.Atomic(int)
     completed_values_1 = []
     completed_values_2 = []
 
@@ -165,7 +165,7 @@ def test_atomic_on_complete_multiple_callbacks() -> None:
 
 def test_atomic_on_complete_callback_order() -> None:
     """Test callbacks are called in registration order."""
-    atomic_obj = Atomic(str)
+    atomic_obj = jv.Atomic(str)
     call_order = []
 
     def callback1(value: str | None) -> None:
@@ -188,7 +188,7 @@ def test_atomic_on_complete_callback_order() -> None:
 
 def test_atomic_complete_without_update() -> None:
     """Test complete method when no update has been called (empty state)."""
-    atomic_obj = Atomic(str)
+    atomic_obj = jv.Atomic(str)
     completed_values = []
 
     def callback(value: str | None) -> None:
@@ -203,7 +203,7 @@ def test_atomic_complete_without_update() -> None:
 
 def test_atomic_complete_with_none_value() -> None:
     """Test complete method when value was explicitly set to None."""
-    atomic_obj = Atomic(type(None))
+    atomic_obj = jv.Atomic(type(None))
     completed_values = []
 
     def callback(value: str | None) -> None:
@@ -218,7 +218,7 @@ def test_atomic_complete_with_none_value() -> None:
 
 def test_atomic_complete_multiple_calls() -> None:
     """Test complete method can be called multiple times."""
-    atomic_obj = Atomic(str)
+    atomic_obj = jv.Atomic(str)
     completed_values = []
 
     def callback(value: str | None) -> None:
@@ -234,7 +234,7 @@ def test_atomic_complete_multiple_calls() -> None:
 
 def test_atomic_complete_no_callbacks() -> None:
     """Test complete method works when no callbacks are registered."""
-    atomic_obj = Atomic(str)
+    atomic_obj = jv.Atomic(str)
     atomic_obj.update("test")
     # Should not raise an exception
     atomic_obj._complete()
@@ -242,7 +242,7 @@ def test_atomic_complete_no_callbacks() -> None:
 
 def test_atomic_complete_after_multiple_updates() -> None:
     """Test complete method after multiple updates (should use latest value)."""
-    atomic_obj = Atomic(str)
+    atomic_obj = jv.Atomic(str)
     completed_values = []
 
     def callback(value: str | None) -> None:
@@ -258,8 +258,8 @@ def test_atomic_complete_after_multiple_updates() -> None:
 
 
 def test_atomic_complex_object_value() -> None:
-    """Test Atomic with complex object as value."""
-    atomic_obj = Atomic(dict[str, Any])
+    """Test jv.Atomic with complex object as value."""
+    atomic_obj = jv.Atomic(dict[str, Any])
     completed_values = []
 
     def callback(value: dict[str, Any] | None) -> None:
@@ -277,9 +277,9 @@ def test_atomic_complex_object_value() -> None:
 
 
 def test_atomic_boolean_values() -> None:
-    """Test Atomic with boolean values."""
-    atomic_true = Atomic(bool)
-    atomic_false = Atomic(bool)
+    """Test jv.Atomic with boolean values."""
+    atomic_true = jv.Atomic(bool)
+    atomic_false = jv.Atomic(bool)
 
     completed_true = []
     completed_false = []
@@ -306,9 +306,9 @@ def test_atomic_boolean_values() -> None:
 
 
 def test_atomic_numeric_values() -> None:
-    """Test Atomic with various numeric values."""
-    atomic_int = Atomic(int)
-    atomic_float = Atomic(float)
+    """Test jv.Atomic with various numeric values."""
+    atomic_int = jv.Atomic(int)
+    atomic_float = jv.Atomic(float)
 
     completed_int = []
     completed_float = []
@@ -336,7 +336,7 @@ def test_atomic_numeric_values() -> None:
 
 def test_atomic_update_overwrite_behavior() -> None:
     """Test that updates completely overwrite previous values."""
-    atomic_obj = Atomic(list)
+    atomic_obj = jv.Atomic(list)
 
     # First update
     atomic_obj.update([1, 2, 3])
@@ -355,7 +355,7 @@ def test_atomic_update_overwrite_behavior() -> None:
 
 def test_atomic_state_consistency() -> None:
     """Test internal state consistency throughout operations."""
-    atomic_obj = Atomic(str)
+    atomic_obj = jv.Atomic(str)
 
     # Initial state
     assert atomic_obj._is_empty is True
@@ -377,8 +377,8 @@ def test_atomic_state_consistency() -> None:
 
 def test_atomic_complete_callback_with_type_info() -> None:
     """Test completion callbacks receive correct type information."""
-    atomic_str = Atomic(str)
-    atomic_int = Atomic(int)
+    atomic_str = jv.Atomic(str)
+    atomic_int = jv.Atomic(int)
 
     received_types = []
 

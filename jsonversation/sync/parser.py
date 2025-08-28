@@ -3,7 +3,7 @@ from typing import Any
 import jiter
 import io
 
-from jsonversation.models import Object
+from jsonversation.sync.models import Object
 
 
 class Parser:

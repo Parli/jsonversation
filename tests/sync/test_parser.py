@@ -1,44 +1,43 @@
 import pytest
 import io
 from typing import Any
-from jsonversation.parser import Parser
-from jsonversation.models import Object, String, List
+import jsonversation as jv
 
 
-def create_simple_object() -> Object:
+def create_simple_object() -> jv.Object:
     """Create a simple test object with string attribute."""
 
-    class TestObject(Object):
-        name: String
+    class TestObject(jv.Object):
+        name: jv.String
 
     return TestObject()
 
 
-def create_object_with_list() -> Object:
+def create_object_with_list() -> jv.Object:
     """Create a test object with list attribute."""
 
-    class TestObject(Object):
-        items: List[String]
+    class TestObject(jv.Object):
+        items: jv.List[jv.String]
 
     return TestObject()
 
 
-def create_complex_object() -> Object:
+def create_complex_object() -> jv.Object:
     """Create a complex test object with multiple attributes."""
 
-    class TestObject(Object):
-        name: String
-        description: String
-        tags: List[String]
+    class TestObject(jv.Object):
+        name: jv.String
+        description: jv.String
+        tags: jv.List[jv.String]
 
     return TestObject()
 
 
-# Parser initialization tests
+# jv.Parser initialization tests
 def test_parser_init_creates_buffer_and_stores_object() -> None:
-    """Test that Parser initializes with empty buffer and stores the object."""
+    """Test that jv.Parser initializes with empty buffer and stores the object."""
     obj = create_simple_object()
-    parser = Parser(obj)
+    parser = jv.Parser(obj)
 
     assert parser._object is obj
     assert isinstance(parser._buffer, io.BytesIO)
@@ -46,14 +45,14 @@ def test_parser_init_creates_buffer_and_stores_object() -> None:
 
 
 def test_parser_init_with_different_object_types() -> None:
-    """Test Parser initialization with different Object types."""
+    """Test jv.Parser initialization with differentjv.Object types."""
     simple_obj = create_simple_object()
     list_obj = create_object_with_list()
     complex_obj = create_complex_object()
 
-    parser1 = Parser(simple_obj)
-    parser2 = Parser(list_obj)
-    parser3 = Parser(complex_obj)
+    parser1 = jv.Parser(simple_obj)
+    parser2 = jv.Parser(list_obj)
+    parser3 = jv.Parser(complex_obj)
 
     assert parser1._object is simple_obj
     assert parser2._object is list_obj
@@ -68,7 +67,7 @@ def test_parser_init_with_different_object_types() -> None:
 def test_push_writes_chunk_to_buffer() -> None:
     """Test that push method writes chunk to internal buffer."""
     obj = create_simple_object()
-    parser = Parser(obj)
+    parser = jv.Parser(obj)
 
     chunk = '{"name": "test"}'
     parser.push(chunk)
@@ -79,7 +78,7 @@ def test_push_writes_chunk_to_buffer() -> None:
 def test_push_accumulates_chunks_in_buffer() -> None:
     """Test that multiple push calls accumulate data in buffer."""
     obj = create_simple_object()
-    parser = Parser(obj)
+    parser = jv.Parser(obj)
 
     chunk1 = '{"name":'
     chunk2 = '"hello"}'
@@ -94,19 +93,19 @@ def test_push_accumulates_chunks_in_buffer() -> None:
 def test_push_with_empty_chunk() -> None:
     """Test push behavior with empty string chunk."""
     obj = create_simple_object()
-    parser = Parser(obj)
+    parser = jv.Parser(obj)
 
     parser.push("")
 
     assert parser._buffer.getvalue() == b""
-    # Object should remain unchanged
+    # jv.Object should remain unchanged
     assert obj.name._value.getvalue() == ""  # type: ignore
 
 
 def test_push_with_unicode_chunk() -> None:
     """Test push with unicode characters in chunk."""
     obj = create_simple_object()
-    parser = Parser(obj)
+    parser = jv.Parser(obj)
 
     unicode_chunk = '{"name": "héllo wörld 🌍"}'
     parser.push(unicode_chunk)
@@ -117,9 +116,9 @@ def test_push_with_unicode_chunk() -> None:
 
 # JSON parsing and object update tests
 def test_push_updates_string_attribute() -> None:
-    """Test that push updates String attributes correctly."""
+    """Test that push updates jv.String attributes correctly."""
     obj = create_simple_object()
-    parser = Parser(obj)
+    parser = jv.Parser(obj)
 
     parser.push('{"name": "Alice"}')
 
@@ -129,7 +128,7 @@ def test_push_updates_string_attribute() -> None:
 def test_push_updates_string_progressively() -> None:
     """Test progressive string updates through multiple pushes."""
     obj = create_simple_object()
-    parser = Parser(obj)
+    parser = jv.Parser(obj)
 
     # First partial JSON
     parser.push('{"name": "Hello')
@@ -141,9 +140,9 @@ def test_push_updates_string_progressively() -> None:
 
 
 def test_push_updates_list_attribute() -> None:
-    """Test that push updates List attributes correctly."""
+    """Test that push updatesjv.List attributes correctly."""
     obj = create_object_with_list()
-    parser = Parser(obj)
+    parser = jv.Parser(obj)
 
     parser.push('{"items": ["first", "second", "third"]}')
 
@@ -156,7 +155,7 @@ def test_push_updates_list_attribute() -> None:
 def test_push_updates_complex_object() -> None:
     """Test updating object with multiple attributes."""
     obj = create_complex_object()
-    parser = Parser(obj)
+    parser = jv.Parser(obj)
 
     json_data = '{"name": "Project", "description": "A test project", "tags": ["python", "testing"]}'
     parser.push(json_data)
@@ -171,7 +170,7 @@ def test_push_updates_complex_object() -> None:
 def test_push_ignores_unknown_keys() -> None:
     """Test that unknown keys in JSON are ignored."""
     obj = create_simple_object()
-    parser = Parser(obj)
+    parser = jv.Parser(obj)
 
     parser.push('{"name": "Alice", "unknown_field": "ignored", "another": 123}')
 
@@ -185,21 +184,21 @@ def test_push_ignores_unknown_keys() -> None:
 def test_push_with_partial_json() -> None:
     """Test behavior with incomplete JSON that jiter can handle."""
     obj = create_simple_object()
-    parser = Parser(obj)
+    parser = jv.Parser(obj)
 
     # Push incomplete JSON
     parser.push('{"name": "Partial')
 
     # Buffer should contain the partial data
     assert parser._buffer.getvalue() == b'{"name": "Partial'
-    # Object might not be updated yet depending on jiter's behavior
+    # jv.Object might not be updated yet depending on jiter's behavior
     # This tests the parser's robustness with partial data
 
 
 def test_push_expanding_list() -> None:
     """Test adding items to a list through multiple pushes."""
     obj = create_object_with_list()
-    parser = Parser(obj)
+    parser = jv.Parser(obj)
 
     # Start with one item
     parser.push('{"items": ["first"]}')
@@ -215,7 +214,7 @@ def test_push_expanding_list() -> None:
 def test_push_expanding_string() -> None:
     """Test string expansion through multiple pushes."""
     obj = create_simple_object()
-    parser = Parser(obj)
+    parser = jv.Parser(obj)
 
     # Initial string
     parser.push('{"name": "Hello"}')
@@ -230,7 +229,7 @@ def test_push_expanding_string() -> None:
 def test_buffer_persists_between_push_calls() -> None:
     """Test that buffer maintains state between push calls."""
     obj = create_simple_object()
-    parser = Parser(obj)
+    parser = jv.Parser(obj)
 
     parser.push("{")
     buffer_after_first = parser._buffer.getvalue()
@@ -245,7 +244,7 @@ def test_buffer_persists_between_push_calls() -> None:
 def test_multiple_complete_json_pushes() -> None:
     """Test multiple complete JSON objects pushed sequentially."""
     obj = create_simple_object()
-    parser = Parser(obj)
+    parser = jv.Parser(obj)
 
     # First complete JSON
     parser.push('{"name": "First"}')
@@ -263,7 +262,7 @@ def test_multiple_complete_json_pushes() -> None:
 def test_push_with_malformed_json() -> None:
     """Test behavior with malformed JSON."""
     obj = create_simple_object()
-    parser = Parser(obj)
+    parser = jv.Parser(obj)
 
     # This should raise an exception from jiter
     with pytest.raises(Exception):  # jiter will raise some kind of parsing error
@@ -273,18 +272,18 @@ def test_push_with_malformed_json() -> None:
 def test_push_empty_json_object() -> None:
     """Test pushing empty JSON object."""
     obj = create_simple_object()
-    parser = Parser(obj)
+    parser = jv.Parser(obj)
 
     parser.push("{}")
 
-    # Object should remain unchanged
+    # jv.Object should remain unchanged
     assert obj.name._value.getvalue() == ""  # type: ignore
 
 
 def test_push_json_with_null_values() -> None:
     """Test handling of null values in JSON."""
     obj = create_simple_object()
-    parser = Parser(obj)
+    parser = jv.Parser(obj)
 
     parser.push('{"name": null}')
 
@@ -295,14 +294,14 @@ def test_push_json_with_null_values() -> None:
 def test_parser_object_property_immutable() -> None:
     """Test that parser's object reference remains constant."""
     obj = create_simple_object()
-    parser = Parser(obj)
+    parser = jv.Parser(obj)
 
     original_obj = parser._object
 
     # Perform operations
     parser.push('{"name": "test"}')
 
-    # Object reference should remain the same
+    # jv.Object reference should remain the same
     assert parser._object is original_obj
     assert parser._object is obj
 
@@ -310,7 +309,7 @@ def test_parser_object_property_immutable() -> None:
 def test_buffer_direct_access() -> None:
     """Test direct access to parser's buffer."""
     obj = create_simple_object()
-    parser = Parser(obj)
+    parser = jv.Parser(obj)
 
     # Should be able to read buffer state
     assert parser._buffer.getvalue() == b""
@@ -325,15 +324,15 @@ def test_multiple_parsers_independence() -> None:
     obj1 = create_simple_object()
     obj2 = create_simple_object()
 
-    parser1 = Parser(obj1)
-    parser2 = Parser(obj2)
+    parser1 = jv.Parser(obj1)
+    parser2 = jv.Parser(obj2)
 
-    parser1.push('{"name": "Parser1"}')
-    parser2.push('{"name": "Parser2"}')
+    parser1.push('{"name": "jv.Parser1"}')
+    parser2.push('{"name": "jv.Parser2"}')
 
-    # Objects should be updated independently
-    assert obj1.name._value.getvalue() == "Parser1"  # type: ignore
-    assert obj2.name._value.getvalue() == "Parser2"  # type: ignore
+    # jv.Objects should be updated independently
+    assert obj1.name._value.getvalue() == "jv.Parser1"  # type: ignore
+    assert obj2.name._value.getvalue() == "jv.Parser2"  # type: ignore
 
     # Buffers should be independent
     assert parser1._buffer.getvalue() != parser2._buffer.getvalue()
@@ -342,18 +341,18 @@ def test_multiple_parsers_independence() -> None:
 def test_large_json_handling() -> None:
     """Test handling of larger JSON strings."""
     obj = create_complex_object()
-    parser = Parser(obj)
+    parser = jv.Parser(obj)
 
     # Create a larger JSON string
     large_json = (
-        '{"name": "Large Object", "description": "'
+        '{"name": "Largejv.Object", "description": "'
         + "x" * 1000
         + '", "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"]}'
     )
 
     parser.push(large_json)
 
-    assert obj.name._value.getvalue() == "Large Object"  # type: ignore
+    assert obj.name._value.getvalue() == "Largejv.Object"  # type: ignore
     assert len(obj.description._value.getvalue()) == 1000 + len("")  # type: ignore
     assert len(obj.tags._values) == 5  # type: ignore
 
@@ -363,7 +362,7 @@ def test_parser_context_manager_basic() -> None:
     """Test basic context manager functionality."""
     obj = create_simple_object()
 
-    with Parser(obj) as parser:
+    with jv.Parser(obj) as parser:
         assert parser._object is obj
         assert isinstance(parser._buffer, io.BytesIO)
         parser.push('{"name": "context_test"}')
@@ -375,7 +374,7 @@ def test_parser_context_manager_basic() -> None:
 def test_parser_context_manager_returns_self() -> None:
     """Test that context manager returns the parser instance."""
     obj = create_simple_object()
-    parser = Parser(obj)
+    parser = jv.Parser(obj)
 
     with parser as context_parser:
         assert context_parser is parser
@@ -392,7 +391,7 @@ def test_parser_context_manager_completion_on_exit() -> None:
 
     obj.name.on_complete(callback)  # type: ignore
 
-    with Parser(obj) as parser:
+    with jv.Parser(obj) as parser:
         parser.push('{"name": "completion_test"}')
         # Completion callback should not be triggered yet
         assert completed_values == []
@@ -415,7 +414,7 @@ def test_parser_context_manager_complex_object_completion() -> None:
     def description_callback(value: str) -> None:
         description_completed.append(value)
 
-    def tags_callback(values: list[String]) -> None:
+    def tags_callback(values: list[jv.String]) -> None:
         tags_completed.append([v.get_value() for v in values])
 
     def object_callback(value: dict[str, Any]) -> None:
@@ -426,7 +425,7 @@ def test_parser_context_manager_complex_object_completion() -> None:
     obj.tags.on_complete(tags_callback)  # type: ignore
     obj.on_complete(object_callback)
 
-    with Parser(obj) as parser:
+    with jv.Parser(obj) as parser:
         parser.push('{"name": "Test", "description": "Description", "tags": ["tag1", "tag2"]}')
         assert name_completed == ["Test"]
         assert description_completed == ["Description"]
@@ -451,7 +450,7 @@ def test_parser_context_manager_streaming_updates() -> None:
     obj.name.on_append(name_update_callback)  # type: ignore
     obj.name.on_complete(name_complete_callback)  # type: ignore
 
-    with Parser(obj) as parser:
+    with jv.Parser(obj) as parser:
         parser.push('{"name": "Stream')
         parser.push('ing Test"}')
         # Updates should be triggered during streaming
@@ -472,7 +471,7 @@ def test_parser_context_manager_multiple_contexts() -> None:
         completed_values.append(value)
 
     obj.name.on_complete(callback)  # type: ignore
-    parser = Parser(obj)
+    parser = jv.Parser(obj)
 
     # First context
     with parser:
@@ -488,7 +487,7 @@ def test_parser_context_manager_multiple_contexts() -> None:
         completed_values_2.append(value)
 
     obj2.name.on_complete(callback2)  # type: ignore
-    parser2 = Parser(obj2)
+    parser2 = jv.Parser(obj2)
 
     with parser2:
         parser2.push('{"name": "second"}')
@@ -507,12 +506,12 @@ def test_parser_context_manager_partial_json() -> None:
 
     obj.name.on_complete(callback)  # type: ignore
 
-    with Parser(obj) as parser:
+    with jv.Parser(obj) as parser:
         # Push partial JSON that might not parse completely
         parser.push('{"name": "partial')
         # The completion should still work when context exits
 
-    # Object should have whatever was successfully parsed
+    # jv.Object should have whatever was successfully parsed
     # Completion should be triggered regardless
 
 
@@ -526,7 +525,7 @@ def test_parser_context_manager_empty_push() -> None:
 
     obj.name.on_complete(callback)  # type: ignore
 
-    with Parser(obj) as _:
+    with jv.Parser(obj) as _:
         # No push operations
         pass
 
@@ -538,7 +537,7 @@ def test_parser_context_manager_buffer_state() -> None:
     """Test that buffer state is preserved during context manager usage."""
     obj = create_simple_object()
 
-    with Parser(obj) as parser:
+    with jv.Parser(obj) as parser:
         parser.push('{"name":')
         buffer_mid_context = parser._buffer.getvalue()
         parser.push(' "test"}')
@@ -557,7 +556,7 @@ def test_parser_context_manager_with_list_object() -> None:
     items_completed: list[list[str]] = []
     object_completed: list[dict[str, Any]] = []
 
-    def items_callback(values: list[String]) -> None:
+    def items_callback(values: list[jv.String]) -> None:
         items_completed.append([v.get_value() for v in values])
 
     def object_callback(value: dict[str, Any]) -> None:
@@ -566,7 +565,7 @@ def test_parser_context_manager_with_list_object() -> None:
     obj.items.on_complete(items_callback)  # type: ignore
     obj.on_complete(object_callback)
 
-    with Parser(obj) as parser:
+    with jv.Parser(obj) as parser:
         parser.push('{"items": ["first", "second", "third"]}')
         # No completions during context
         assert items_completed == []
@@ -581,7 +580,7 @@ def test_parser_context_manager_nested_context_safety() -> None:
     """Test that nested context managers work safely (if somehow used)."""
     obj = create_simple_object()
 
-    parser = Parser(obj)
+    parser = jv.Parser(obj)
 
     with parser as p1:
         p1.push('{"name": "outer"}')
@@ -590,7 +589,7 @@ def test_parser_context_manager_nested_context_safety() -> None:
             assert p1 is p2  # Same parser instance
             p2.push('updated"}')  # This would append to buffer
 
-    # Object should have the combined result
+    # jv.Object should have the combined result
     assert "outer" in obj.name._value.getvalue()  # type: ignore
 
 
@@ -605,7 +604,7 @@ def test_parser_context_manager_completion_order() -> None:
     def description_callback(value: str) -> None:
         completion_order.append(f"description:{value}")
 
-    def tags_callback(values: list[String]) -> None:
+    def tags_callback(values: list[jv.String]) -> None:
         completion_order.append(f"tags:{len(values)}")
 
     def object_callback(value: dict[str, Any]) -> None:
@@ -616,7 +615,7 @@ def test_parser_context_manager_completion_order() -> None:
     obj.tags.on_complete(tags_callback)  # type: ignore
     obj.on_complete(object_callback)
 
-    with Parser(obj) as parser:
+    with jv.Parser(obj) as parser:
         # Streaming updates that would trigger key transitions
         parser.push('{"name": "Test"}')
         parser.push('{"name": "Test", "description": "Desc"}')
