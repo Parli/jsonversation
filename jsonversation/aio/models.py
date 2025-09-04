@@ -31,7 +31,17 @@ class Object(StreamingObject[dict[str, Any]]):
         self._parsed_keys = []
         self._value = {}
 
-        for key, type_hint in type(self).__annotations__.items():
+        # initialize keys for potential parent classes
+        for cls in self.__class__.mro()[1:-1]:
+            if cls.__name__ == "Object" or cls.__name__ == "StreamingObject":
+                break
+
+            self._initialize_attributes(cls.__annotations__)
+
+        self._initialize_attributes(type(self).__annotations__)
+
+    def _initialize_attributes(self, attributes: dict[str, Any]) -> None:
+        for key, type_hint in attributes.items():
             self._keys.append(key)
 
             # Handle List[T]

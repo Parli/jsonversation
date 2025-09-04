@@ -755,3 +755,15 @@ def test_object_complete_complex_nested_streaming() -> None:
 
     assert footer_completed == ["Stream Footer"]  # Completed on final _complete()
     assert len(completed_values) == 1
+
+
+def test_object_creation_with_parent_classes() -> None:
+    class ParentObject(jv.Object):
+        name: jv.String
+
+    class ChildObject(ParentObject):
+        test_field: jv.String
+
+    o = ChildObject()
+
+    assert o.__getattribute__("name") is not None

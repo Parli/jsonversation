@@ -5,16 +5,23 @@ from typing import Any, Callable
 
 
 class StreamingObject[T]:
+    _on_complete_funcs: list[Callable[[T], None]]
+
+    def __init__(self) -> None:
+        self._on_complete_funcs = []
+
     def update(self, value: T) -> None:
         return None
 
     def _complete(self) -> None: ...
 
+    def on_complete(self, func: Callable[[T], None]) -> None:
+        self._on_complete_funcs.append(func)
+
 
 class Object(StreamingObject[dict[str, Any]]):
     _keys: list[str]
     _parsed_keys: list[str]
-    _on_complete_funcs: list[Callable[[dict[str, Any]], None]]
     _value: dict[str, Any]
 
     def __init__(self) -> None:
@@ -22,9 +29,18 @@ class Object(StreamingObject[dict[str, Any]]):
         self._keys = []
         self._parsed_keys = []
         self._value = {}
-        self._on_complete_funcs = []
 
-        for key, type_hint in type(self).__annotations__.items():
+        # initialize keys for potential parent classes
+        for cls in self.__class__.mro()[1:-1]:
+            if cls.__name__ == "Object" or cls.__name__ == "StreamingObject":
+                break
+
+            self._initialize_attributes(cls.__annotations__)
+
+        self._initialize_attributes(type(self).__annotations__)
+
+    def _initialize_attributes(self, attributes: dict[str, Any]) -> None:
+        for key, type_hint in attributes.items():
             self._keys.append(key)
 
             # Handle List[T]
@@ -167,22 +183,18 @@ class List[T: StreamingObject[Any]](StreamingObject[list[Any]]):
         return self._values
 
 
-class Atomic[T](StreamingObject[T]):
+class Atomic[T](StreamingObject[T | None]):
     _is_empty: bool
     _value: T | None
-    _on_complete_funcs: list[Callable[[T | None], None]]
 
     def __init__(self, item_cls: type[T]) -> None:
         self._is_empty = True
         self._value = None
         self._on_complete_funcs = []
 
-    def update(self, value: T) -> None:
+    def update(self, value: T | None) -> None:
         self._value = value
         self._is_empty = False
-
-    def on_complete(self, func: Callable[[T | None], None]) -> None:
-        self._on_complete_funcs.append(func)
 
     def _complete(self) -> None:
         if not self._is_empty:
