@@ -6,8 +6,7 @@ A Python library for streaming JSON parsing that enables real-time processing of
 
 ## Installation
 
-Coming soon!
-
+`pip install jsonversation`
 
 ## Key Features
 
